@@ -53,6 +53,29 @@ router.get('/post/:id', async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 });
+router.post('/search', async (req, res) => {
+    try {
+        let searchterm=req.body.searchterm;
+        const searchnospecialchar=searchterm.replace(/[^a-zA-z0-9 ]/g,"");
+        const data=await post.find({
+            $or:[
+                {title:{$regex:new RegExp(searchnospecialchar,'i')}},
+                {body:{$regex:new RegExp(searchnospecialchar,'i')}}
+            ]
+
+        })        
+
+
+
+        res.send("search"),data;
+
+        
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).send("Internal Server Error");
+    }
+});
 
 
 // function insertpostdata(){

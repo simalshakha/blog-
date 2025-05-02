@@ -7,7 +7,8 @@ const app=express();
 const PORT =8000 || process.env.PORT;
 
 connectdb();
-
+app.use(express.urlencoded({extended:true}));
+app.use(express.json());
 app.use(expressLayout);
 app.use(express.static('public'));
 app.set('layout','./layouts/main');
