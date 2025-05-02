@@ -4,7 +4,30 @@ const router =express.Router();
 const post = require('../models/post');
 const user = require('../models/user');
 
+const bcrypt=require('bcrypt');
+const jwt=require('jsonwebtoken');
+
+
 const adminLayout='../views/layouts/admin';
+const jwtsecret=process.env.JWT_SECRET
+
+
+
+const authMiddleware=(req,res,next)=>{
+    const token=req.cookies.token;
+    if(!token){
+        return res.status(401).json({message:'Unautorized'});
+    }
+    try{
+        const decoded=jwt.verify(token,jwtSecret);
+        req.userId=decoded.userId;
+        next();
+    }catch(error){
+        return res.status(401).json({message:'Unautorized'});
+
+    }
+}
+
 
 
 router.get('/admin', async (req, res) => {
@@ -17,17 +40,52 @@ router.get('/admin', async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 });
+
 router.post('/admin', async (req, res) => {
     try {
-        const{username,password}=req.body;
+        const { username, password } = req.body;
+        const user =await User.findOne({username});
+        if(!user)
+            {
+            return res.status(401).send('Internal Server Error');
+            }
         
-        if(req.body.username=='admin'&& req.body.password== '123')
-        {
-            res.send('you are login');
-        }
-        else
-        { 
-            res.send('you are not login');
+        const ispasswordvalid = await bcrypt.compare(password,user.password);
+        if(!ispasswordvalid)
+            {
+            return res.status(401).send('Internal Server Error');
+            }
+        const token =jwt.sign({userId:user._id},jwtSecret);
+        res.cookie('token',token,{httpOnly:true});
+        res.redirect('/dashboard');
+
+
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send('Internal Server Error');
+    }
+});
+router.get('/dashboard',authMiddleware,async(req,res)=>{
+res.render('admin/dashboard');
+})
+
+
+router.post('/register', async (req, res) => {
+    try {
+        const{username,password}=req.body;
+        const hashedpassword=await bcrypt.hash(password,10);
+        try{
+            const user=await user.create({
+                username,
+                password:hashedpassword
+            });
+            res.status(201).json({message:'user created',user});
+        }catch(error){
+            if (error.code===11000){
+                res.status(409).json({message:'user existed',user});
+            }
+            res.status(500).json({message:'internal server error',user});
         }
 
     } catch (error) {
