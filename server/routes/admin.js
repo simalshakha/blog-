@@ -117,7 +117,6 @@ router.post('/register', async (req, res) => {
             }
             res.status(500).json({message:'internal server error',user});
         }
-
     } catch (error) {
         console.log(error);
         res.redirect('/admin')
@@ -126,20 +125,18 @@ router.post('/register', async (req, res) => {
 
 router.put('/edit-post/:id', authMiddleware, async (req, res) => {
     try {
-  
-      await Post.findByIdAndUpdate(req.params.id, {
+        await Post.findByIdAndUpdate(req.params.id, {
         title: req.body.title,
         body: req.body.body,
         updatedAt: Date.now()
-      });
-  
-      res.redirect(`/edit-post/${req.params.id}`);
-  
+    });
+
+        res.redirect(`/edit-post/${req.params.id}`);
+
     } catch (error) {
-      console.log(error);
+        console.log(error);
     }
-  
-  });
+});
 
 router.delete('/delete-post/:id', authMiddleware, async (req, res) => {
 
