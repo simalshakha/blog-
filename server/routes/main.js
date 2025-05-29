@@ -1,7 +1,7 @@
 const express =require('express');
 const router =express.Router();
 
-const post = require('../models/post');
+const Post = require('../models/post');
 
 router.get('/', async (req, res) => {
     try {
@@ -13,12 +13,12 @@ router.get('/', async (req, res) => {
         let perPage = 10;
         let page = parseInt(req.query.page) || 1;
 
-        const data = await post.aggregate([{ $sort: { createdAt: -1 } }])
+        const data = await Post.aggregate([{ $sort: { createdAt: -1 } }])
             .skip(perPage * (page - 1))
             .limit(perPage) // ✅ Fixed typo here
             .exec();
 
-        const count = await post.countDocuments(); // ✅ Better method for counting docs
+        const count = await Post.countDocuments(); // ✅ Better method for counting docs
 
         const nextPage = page + 1;
         const hasNextPage = nextPage <= Math.ceil(count / perPage); // ✅ Fixed Math casing
@@ -44,9 +44,12 @@ router.get('/post/:id', async (req, res) => {
 
         const slug = req.params.id;
 
-        const data = await post.findById(slug); 
+        // const data = await Post.findById(slug); 
+        const data = await Post.findById(slug).populate('user', 'username');
 
-        res.render('post', { data }); // Fixed typo 'loscal'
+        console.log('Full Post:', data.user.username);
+
+        res.render('post', { data,username:data.user.username }); // Fixed typo 'loscal'
 
     } catch (error) {
         console.log(error);
