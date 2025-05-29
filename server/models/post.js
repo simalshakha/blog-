@@ -10,13 +10,23 @@ const PostSchema = new Schema({
     required: true
   },
   image: {
-    type: String, // URL to image
-    required: false // image is optional
+    type: String, 
+    required: false 
   },
+  topics: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Topic',
+    required:false
+    }],
+
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
+  },
+  link: {
+    type: String 
+
   },
   createdAt: {
     type: Date,

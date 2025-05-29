@@ -8,12 +8,8 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const adminLayout = '../views/layouts/admin';
 
-// ✅ Add dotenv if needed and load environment variables
 require('dotenv').config();
-
 const jwtSecret = process.env.JWT_SECRET;
-
-
 const authMiddleware = (req, res, next) => {
   const token = req.cookies?.token;
 
@@ -30,8 +26,6 @@ const authMiddleware = (req, res, next) => {
     return res.status(403).json({ message: 'Forbidden: Invalid or expired token' });
   }
 };
-
-
 router.get('/admin', async (req, res) => {
     try {
         
@@ -42,7 +36,6 @@ router.get('/admin', async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 });
-
 router.post('/admin', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -76,8 +69,6 @@ router.post('/admin', async (req, res) => {
         return res.status(500).send('Internal Server Error');
     }
 });
-
-
 router.get('/dashboard', authMiddleware, async (req, res) => {
     try {
         const locals = {
@@ -105,9 +96,6 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 });
-
-
-
 router.get('/add-post', authMiddleware, async (req, res) => {
         console.log("req.user = ", req.user); 
     try {
@@ -117,7 +105,6 @@ router.get('/add-post', authMiddleware, async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 });
-
 // 🟢 Add post handler
 router.post('/add-post', authMiddleware, async (req, res) => {
         console.log("req.user = ", req.user); 
@@ -137,7 +124,6 @@ router.post('/add-post', authMiddleware, async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 });
-
 // 🟢 User registration
 router.post('/register', async (req, res) => {
     try {
@@ -162,7 +148,6 @@ router.post('/register', async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' });
     }
 });
-
 router.get('/edit-post/:id', authMiddleware, async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -181,7 +166,6 @@ router.get('/edit-post/:id', authMiddleware, async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
-
 router.put('/edit-post/:id', authMiddleware, async (req, res) => {
     try {
         await Post.findByIdAndUpdate(req.params.id, {
@@ -195,7 +179,6 @@ router.put('/edit-post/:id', authMiddleware, async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 });
-
 // 🟢 Delete post
 router.post('/delete-post/:id', authMiddleware, async (req, res) => {
     try {
@@ -206,11 +189,9 @@ router.post('/delete-post/:id', authMiddleware, async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 });
-
 // 🟢 Logout
 router.get('/logout', (req, res) => {
     res.clearCookie('token');
     res.redirect('/');
 });
-
 module.exports = router;
