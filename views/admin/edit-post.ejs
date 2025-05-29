@@ -1,21 +1,21 @@
-<a href="/dashboard">&larr; Back</a>
-<div class="admin-title">
-  <h2>View / Edit Post</h2>
+<h2>Edit Post</h2>
 
-  <form action="/delete-post/<%= data._id %>?_method=DELETE" method="POST">
-    <input type="submit" value="Delete" class="btn-delete btn">
-  </form>
+<form action="/edit-post/<%= post._id %>?_method=PUT" method="POST">
+  <label for="title">Title:</label>
+  <input type="text" name="title" value="<%= post.title %>" required>
 
-</div>
+  <label for="body">Body:</label>
+  <textarea name="body" rows="10"><%= post.body %></textarea>
 
-<form action="/edit-post/<%= data._id %>?_method=PUT" method="POST">
+  <label for="image">Image URL:</label>
+  <input type="text" name="image" value="<%= post.image || '' %>">
 
-  <label for="title"><b>Title</b></label>
-  <input type="text" placeholder="Post Title" name="title" value="<%= data.title %>">
+  <% if (post.image) { %>
+    <div style="margin: 10px 0;">
+      <p>Current Image:</p>
+      <img src="<%= post.image %>" alt="Post image" style="max-width: 200px; border-radius: 8px;">
+    </div>
+  <% } %>
 
-  <label for="body"><b>Content</b></label>
-  <textarea name="body" cols="50" rows="10"><%= data.body %></textarea>
-
-  <input type="submit" value="Update" class="btn">
-
+  <input type="submit" value="Update Post">
 </form>

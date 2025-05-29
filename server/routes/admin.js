@@ -78,9 +78,6 @@ router.post('/admin', async (req, res) => {
 });
 
 
-
-
-// 🟢 Dashboard - view user's own posts
 router.get('/dashboard', authMiddleware, async (req, res) => {
     try {
         const locals = {
@@ -160,7 +157,25 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// 🟢 Edit post
+router.get('/edit-post/:id', authMiddleware, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).send('Post not found');
+    }
+
+    // Optional: ensure the logged-in user owns the post
+    if (post.user._id.toString() !== req.user.userId) {
+      return res.status(403).send('Forbidden');
+    }
+
+    res.render('admin/edit-post', { post });
+  } catch (error) {
+    console.error('❌ Error loading post for edit:', error);
+    res.status(500).send('Server Error');
+  }
+});
+
 router.put('/edit-post/:id', authMiddleware, async (req, res) => {
     try {
         await Post.findByIdAndUpdate(req.params.id, {
