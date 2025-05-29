@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-
+const mongoose = require('mongoose');
 const Post = require('../models/post'); 
 const User = require('../models/user');
 
@@ -13,20 +13,25 @@ require('dotenv').config();
 
 const jwtSecret = process.env.JWT_SECRET;
 
-// 🔐 Middleware to protect routes
+
 const authMiddleware = (req, res, next) => {
-    const token = req.cookies.token;
-    if (!token) {
-        return res.status(401).json({ message: 'Unauthorized' });
-    }
-    try {
-        const decoded = jwt.verify(token, jwtSecret);
-        req.userId = decoded.userId;
-        next();
-    } catch (error) {
-        return res.status(401).json({ message: 'Unauthorized' });
-    }
+  const token = req.cookies?.token;
+
+  if (!token) {
+    return res.status(401).json({ message: 'Unauthorized: No token provided' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, jwtSecret);
+    req.user = decoded; // Attach entire user info (e.g., { userId, username }) to req.user
+    next();
+  } catch (error) {
+    console.error('JWT Verification Error:', error);
+    return res.status(403).json({ message: 'Forbidden: Invalid or expired token' });
+  }
 };
+
+
 router.get('/admin', async (req, res) => {
     try {
         
@@ -75,8 +80,7 @@ router.post('/admin', async (req, res) => {
 
 
 
-
-// 🟢 Dashboard - view posts
+// 🟢 Dashboard - view user's own posts
 router.get('/dashboard', authMiddleware, async (req, res) => {
     try {
         const locals = {
@@ -84,12 +88,12 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
             description: 'Simple Blog created with NodeJs, Express & MongoDb.'
         };
 
-        const data = await Post.find();
-        console.log("📄 Dashboard post data:", data);
+        const data = await Post.find({ user: req.user.userId }).populate('user', 'username');
+
 
         res.render('admin/dashboard', {
             locals,
-            data, // ✅ must pass "data" for EJS
+            data,
             layout: adminLayout
         });
 
@@ -99,8 +103,10 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
     }
 });
 
-// 🟢 Add post form
+
+
 router.get('/add-post', authMiddleware, async (req, res) => {
+        console.log("req.user = ", req.user); 
     try {
         res.render('admin/add-post', { layout: adminLayout }); // if you have a form
     } catch (error) {
@@ -111,12 +117,14 @@ router.get('/add-post', authMiddleware, async (req, res) => {
 
 // 🟢 Add post handler
 router.post('/add-post', authMiddleware, async (req, res) => {
+        console.log("req.user = ", req.user); 
     try {
         const { title, body ,image} = req.body;
         const newPost = new Post({
             title,
             body,
-            image // optional
+            image, // optional
+            user: req.user.userId 
         });
 
         await newPost.save();
