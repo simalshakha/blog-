@@ -6,6 +6,10 @@ const UserSchema = new mongoose.Schema({
         required: true,
         unique: true // 👈 ensures no duplicate usernames
     },
+    image: {
+        type: String, // URL to image
+        required: false // image is optional
+    },
     password: {
         type: String,
         required: true
