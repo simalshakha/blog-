@@ -5,7 +5,6 @@ const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const connectdb = require('./server/config/db');
-
 const { isActiveRoute } = require('./server/helpers/routeHelpers');
 // const methodOverride = require('method-override');
 // app.use(methodOverride('_method'));
@@ -15,6 +14,7 @@ const PORT = process.env.PORT || 5000;
 
 // Connect to DB
 connectdb();
+// app.use(express.urlencoded({ extended: true }));
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));

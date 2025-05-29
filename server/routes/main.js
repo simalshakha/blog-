@@ -2,6 +2,8 @@ const express =require('express');
 const router =express.Router();
 
 const Post = require('../models/post');
+const Topic = require('../models/topics');
+
 
 router.get('/', async (req, res) => {
     try {
@@ -46,16 +48,19 @@ router.get('/post/:id', async (req, res) => {
 
         // const data = await Post.findById(slug); 
         const data = await Post.findById(slug).populate('user', 'username');
+        const topics = await Topic.find({ post: slug });
+        console.log('Full Post:', topics);
 
-        console.log('Full Post:', data.user.username);
-
-        res.render('post', { data,username:data.user.username }); // Fixed typo 'loscal'
+        res.render('post', { data,username:data.user.username,topics }); // Fixed typo 'loscal'
 
     } catch (error) {
         console.log(error);
         res.status(500).send("Internal Server Error");
     }
 });
+
+
+
 router.post('/search', async (req, res) => {
     try {
         let searchterm=req.body.searchterm;

@@ -3,7 +3,7 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const Post = require('../models/post'); 
 const User = require('../models/user');
-
+const Topic = require('../models/topics');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const adminLayout = '../views/layouts/admin';
@@ -194,4 +194,52 @@ router.get('/logout', (req, res) => {
     res.clearCookie('token');
     res.redirect('/');
 });
+
+
+router.get('/Add-topics/:id', async (req, res) => {
+    try {
+        const postId = req.params.id;
+
+        // Fetch the Post and populate the user field if needed
+        const post = await Post.findById(postId).populate('user', 'username');
+
+        if (!post) {
+            return res.status(404).send("Post not found");
+        }
+
+        // Render the topic creation form with post data
+        res.render('admin/add-topics', { post });
+
+    } catch (error) {
+        console.error("❌ Error fetching post:", error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+router.post('/Add-topics/:id', authMiddleware, async (req, res) => {
+    console.log("📩 Incoming form data:", req.body);  // <== ADD THIS LINE
+    console.log("🆔 Post ID from URL:", req.params.id);  // <== ADD THIS LINE
+
+    try {
+        const { name, link, body } = req.body;
+
+        if (!name) {
+            console.log("❌ 'name' is missing in form data!");
+        }
+
+        const topic = new Topic({
+            name: name,  // <-- This expects 'name' field
+            image: req.body.image,
+            body: req.body.body,
+            post: req.params.id
+        });
+
+        await topic.save();
+        res.redirect('/dashboard');
+    } catch (error) {
+        console.error("❌ Error adding topic:", error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
 module.exports = router;

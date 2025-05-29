@@ -1,5 +1,6 @@
-const mongoose =require('mongoose');
+const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+
 const PostSchema = new Schema({
   title: {
     type: String,
@@ -10,23 +11,15 @@ const PostSchema = new Schema({
     required: true
   },
   image: {
-    type: String, 
-    required: false 
+    type: String // optional
   },
-  topics: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Topic',
-    required:false
-    }],
-
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
   link: {
-    type: String 
-
+    type: String
   },
   createdAt: {
     type: Date,
@@ -38,4 +31,14 @@ const PostSchema = new Schema({
   }
 });
 
-module.exports=mongoose.model('Post',PostSchema);
+// Virtual to populate related topics
+PostSchema.virtual('topics', {
+  ref: 'Topic',
+  localField: '_id',
+  foreignField: 'post'
+});
+
+PostSchema.set('toObject', { virtuals: true });
+PostSchema.set('toJSON', { virtuals: true });
+
+module.exports = mongoose.model('Post', PostSchema);

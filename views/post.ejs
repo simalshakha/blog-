@@ -1,10 +1,30 @@
 <h1><%= data.title %></h1>
 <p><strong>By:</strong> <%= username %></p>
+
 <article class="article">
     <% if (data.image) { %>
-    <img src="<%= data.image %>" alt="Post Image" class="post-image" />
+        <img src="<%= data.image %>" alt="Post Image" class="post-image" />
     <% } %>
-
-    
     <p><%= data.body %></p>
 </article>
+
+<hr>
+
+<section class="topics">
+    
+    <% if (topics.length > 0) { %>
+        <ul>
+            <% topics.forEach(topic => { %>
+                <li>
+                    <h3><%= topic.name %></h3>
+                    <% if (topic.image) { %>
+                        <img src="<%= topic.image %>" alt="Topic Image" style="max-width: 200px;" />
+                    <% } %>
+                    <p><%= topic.body %></p>
+                </li>
+            <% }) %>
+        </ul>
+    <% } else { %>
+        <p>No topics available for this post.</p>
+    <% } %>
+</section>
