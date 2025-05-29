@@ -338,3 +338,9 @@ img {
 .pagination:hover {
   color: var(--black);
 }
+.post-image {
+  width: 300px;
+  height: auto;
+  border-radius: 8px;
+  margin-bottom: 1em;
+}

@@ -1,6 +1,10 @@
-<h1>
-    <%= data.title %>
-<article class ='article'>
-    <%= data.body %>
+<h1><%= data.title %></h1>
+
+<article class="article">
+    <% if (data.image) { %>
+    <img src="<%= data.image %>" alt="Post Image" class="post-image" />
+    <% } %>
+
+    
+    <p><%= data.body %></p>
 </article>
-</h1>

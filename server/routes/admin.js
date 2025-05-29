@@ -112,8 +112,13 @@ router.get('/add-post', authMiddleware, async (req, res) => {
 // 🟢 Add post handler
 router.post('/add-post', authMiddleware, async (req, res) => {
     try {
-        const { title, body } = req.body;
-        const newPost = new Post({ title, body });
+        const { title, body ,image} = req.body;
+        const newPost = new Post({
+            title,
+            body,
+            image // optional
+        });
+
         await newPost.save();
         res.redirect('/dashboard');
     } catch (error) {
@@ -163,7 +168,7 @@ router.put('/edit-post/:id', authMiddleware, async (req, res) => {
 });
 
 // 🟢 Delete post
-router.delete('/delete-post/:id', authMiddleware, async (req, res) => {
+router.post('/delete-post/:id', authMiddleware, async (req, res) => {
     try {
         await Post.deleteOne({ _id: req.params.id });
         res.redirect('/dashboard');
