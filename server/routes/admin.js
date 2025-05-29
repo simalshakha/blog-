@@ -84,14 +84,20 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
             title: 'Dashboard',
             description: 'Simple Blog created with NodeJs, Express & MongoDb.'
         };
-
+        const user = await User.findById(req.user.userId).select('username');
+    
+        if (!user) {
+        return res.status(404).send('User not found');
+        }
         const data = await Post.find({ user: req.user.userId }).populate('user', 'username');
+        console.log("Current user:", req.user);
 
 
         res.render('admin/dashboard', {
-            locals,
-            data,
-            layout: adminLayout
+        locals,
+        data,
+        username: user.username, // ✅ just pass username
+        layout: adminLayout
         });
 
     } catch (error) {

@@ -1,32 +1,30 @@
 <div class="admin-title">
-    <h2>Posts</h2>
-    <a href="/add-post" class="button">+ Add New</a>
-  </div>
-  
-  <ul class="admin-posts">
-  
-    <% data.forEach(post => { %>
+  <h2>Posts</h2>
+  <p><strong>Logged in as:</strong> <%= username %></p>
 
-      <li>
-  <a href="/post/<%= post._id %>">
-    <%= post.title %> &nearr;
-  </a>
+ 
+  <a href="/add-post" class="button">+ Add New</a>
+</div>
 
-  <% if (post.user && post.user.username) { %>
-    <div class="post-author">
-      <small>By <%= post.user.username %></small>
-    </div>
-  <% } %>
+<ul class="admin-posts">
+  <% data.forEach(post => { %>
+    <li>
+      <% if (post.user && post.user.username) { %>
+        <div class="post-author" style="margin-bottom: 5px;">
+          <strong>By <%= post.user.username %></strong>
+        </div>
+      <% } %>
 
-  <div class="admin-post-controls">
-    <a href="/edit-post/<%= post._id %>" class="btn">Edit</a>
+      <a href="/post/<%= post._id %>">
+        <%= post.title %> &nearr;
+      </a>
 
-    <form action="/delete-post/<%= post._id %>?_method=DELETE" method="POST">
-      <input type="submit" value="Delete" class="btn-delete btn">
-    </form>
-  </div>
-</li>
-
-  
-    <% }) %>
-  </ul>
+      <div class="admin-post-controls">
+        <a href="/edit-post/<%= post._id %>" class="btn">Edit</a>
+        <form action="/delete-post/<%= post._id %>?_method=DELETE" method="POST">
+          <input type="submit" value="Delete" class="btn-delete btn">
+        </form>
+      </div>
+    </li>
+  <% }) %>
+</ul>
