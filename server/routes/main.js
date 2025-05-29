@@ -10,7 +10,7 @@ router.get('/', async (req, res) => {
             description: "can post blogs"
         };
 
-        let perPage = 1;
+        let perPage = 10;
         let page = parseInt(req.query.page) || 1;
 
         const data = await post.aggregate([{ $sort: { createdAt: -1 } }])
