@@ -4,11 +4,11 @@ const UserSchema = new mongoose.Schema({
     username: {
         type: String,
         required: true,
-        unique: true // 👈 ensures no duplicate usernames
+        unique: true 
     },
     image: {
-        type: String, // URL to image
-        required: false // image is optional
+        type: String, 
+        required: false
     },
     password: {
         type: String,

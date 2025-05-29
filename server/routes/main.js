@@ -46,7 +46,7 @@ router.get('/post/:id', async (req, res) => {
 
         const slug = req.params.id;
 
-        // const data = await Post.findById(slug); 
+       
         const data = await Post.findById(slug).populate('user', 'username');
         const topics = await Topic.find({ post: slug });
         console.log('Full Post:', topics);

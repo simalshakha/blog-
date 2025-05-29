@@ -81,7 +81,7 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
         return res.status(404).send('User not found');
         }
         const data = await Post.find({ user: req.user.userId }).populate('user', 'username');
-        console.log("Current user:", req.user);
+        // console.log("Current user:", req.user);
 
 
         res.render('admin/dashboard', {
@@ -128,7 +128,7 @@ router.post('/add-post', authMiddleware, async (req, res) => {
 router.post('/register', async (req, res) => {
     try {
         const { username, password } = req.body;
-        console.log("📥 Incoming registration request:", { username, password });
+        // console.log("📥 Incoming registration request:", { username, password });
 
         if (!username || !password) {
             return res.status(400).json({ message: 'Username and password are required' });
@@ -137,7 +137,7 @@ router.post('/register', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = await User.create({ username, password: hashedPassword });
 
-        console.log("✅ User created:", newUser);
+        // console.log("✅ User created:", newUser);
         return res.status(201).json({ message: 'User created', user: newUser });
 
     } catch (error) {
@@ -200,14 +200,14 @@ router.get('/Add-topics/:id', async (req, res) => {
     try {
         const postId = req.params.id;
 
-        // Fetch the Post and populate the user field if needed
+        
         const post = await Post.findById(postId).populate('user', 'username');
 
         if (!post) {
             return res.status(404).send("Post not found");
         }
 
-        // Render the topic creation form with post data
+      
         res.render('admin/add-topics', { post });
 
     } catch (error) {
@@ -217,9 +217,7 @@ router.get('/Add-topics/:id', async (req, res) => {
 });
 
 router.post('/Add-topics/:id', authMiddleware, async (req, res) => {
-    console.log("📩 Incoming form data:", req.body);  // <== ADD THIS LINE
-    console.log("🆔 Post ID from URL:", req.params.id);  // <== ADD THIS LINE
-
+    
     try {
         const { name, link, body } = req.body;
 
