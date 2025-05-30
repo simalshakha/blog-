@@ -11,20 +11,15 @@ router.get('/', async (req, res) => {
             title: "Blogs",
             description: "can post blogs"
         };
-
         let perPage = 10;
         let page = parseInt(req.query.page) || 1;
-
         const data = await Post.aggregate([{ $sort: { createdAt: -1 } }])
             .skip(perPage * (page - 1))
-            .limit(perPage) // ✅ Fixed typo here
+            .limit(perPage) 
             .exec();
-
-        const count = await Post.countDocuments(); // ✅ Better method for counting docs
-
+        const count = await Post.countDocuments(); 
         const nextPage = page + 1;
-        const hasNextPage = nextPage <= Math.ceil(count / perPage); // ✅ Fixed Math casing
-
+        const hasNextPage = nextPage <= Math.ceil(count / perPage); 
         res.render("index", {
             locals,
             data,
@@ -42,16 +37,10 @@ router.get('/', async (req, res) => {
 
 router.get('/post/:id', async (req, res) => {
     try {
-        
-
         const slug = req.params.id;
-
-       
         const data = await Post.findById(slug).populate('user', 'username');
         const topics = await Topic.find({ post: slug });
-        console.log('Full Post:', topics);
-
-        res.render('post', { data,username:data.user.username,topics }); // Fixed typo 'loscal'
+        res.render('post', { data,username:data.user.username,topics });
 
     } catch (error) {
         console.log(error);

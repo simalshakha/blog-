@@ -1,243 +1,28 @@
 const express = require('express');
 const router = express.Router();
-const mongoose = require('mongoose');
-const Post = require('../models/post'); 
-const User = require('../models/user');
-const Topic = require('../models/topics');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const adminLayout = '../views/layouts/admin';
+const auth = require('../middleware/authmiddleware');
+const authController = require('../controllers/auth');
+const postController = require('../controllers/post');
+const adminController = require('../controllers/admincontroller');
+const topicController = require('../controllers/topiccontroller');
+// Auth
+router.post('/admin', authController.login);
+router.post('/register', authController.register);
+router.get('/logout', authController.logout);
 
-require('dotenv').config();
-const jwtSecret = process.env.JWT_SECRET;
-const authMiddleware = (req, res, next) => {
-  const token = req.cookies?.token;
+// Admin
+router.get('/admin', adminController.getAdminPage);
+router.get('/dashboard', auth, postController.getDashboard);
 
-  if (!token) {
-    return res.status(401).json({ message: 'Unauthorized: No token provided' });
-  }
+// Posts
+router.get('/add-post', auth, postController.renderAddPost);
+router.post('/add-post', auth, postController.createPost);
+router.get('/edit-post/:id', auth, postController.renderEditPost);
+router.put('/edit-post/:id', auth, postController.updatePost);
+router.post('/delete-post/:id', auth, postController.deletePost);
 
-  try {
-    const decoded = jwt.verify(token, jwtSecret);
-    req.user = decoded; // Attach entire user info (e.g., { userId, username }) to req.user
-    next();
-  } catch (error) {
-    console.error('JWT Verification Error:', error);
-    return res.status(403).json({ message: 'Forbidden: Invalid or expired token' });
-  }
-};
-router.get('/admin', async (req, res) => {
-    try {
-        
-        res.render('admin/index',{layout: adminLayout}); 
-
-    } catch (error) {
-        console.log(error);
-        res.status(500).send("Internal Server Error");
-    }
-});
-router.post('/admin', async (req, res) => {
-    try {
-        const { username, password } = req.body;
-
-        console.log("📥 Login request received:", { username, password });
-
-        const user = await User.findOne({ username });
-
-        if (!user) {
-            console.log("❌ User not found");
-            return res.status(401).send('User not found');
-        }
-
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-
-        if (!isPasswordValid) {
-            console.log("❌ Invalid password");
-            return res.status(401).send('Invalid credentials');
-        }
-
-        const token = jwt.sign({ userId: user._id }, jwtSecret);
-        console.log("🔑 JWT Token generated:", token);
-
-        res.cookie('token', token, { httpOnly: true });
-        console.log("✅ Cookie set. Redirecting to /dashboard");
-
-        res.redirect('/dashboard');
-
-    } catch (error) {
-        console.error("❌ Error in login route:", error);
-        return res.status(500).send('Internal Server Error');
-    }
-});
-router.get('/dashboard', authMiddleware, async (req, res) => {
-    try {
-        const locals = {
-            title: 'Dashboard',
-            description: 'Simple Blog created with NodeJs, Express & MongoDb.'
-        };
-        const user = await User.findById(req.user.userId).select('username');
-    
-        if (!user) {
-        return res.status(404).send('User not found');
-        }
-        const data = await Post.find({ user: req.user.userId }).populate('user', 'username');
-        // console.log("Current user:", req.user);
-
-
-        res.render('admin/dashboard', {
-        locals,
-        data,
-        username: user.username, // ✅ just pass username
-        layout: adminLayout
-        });
-
-    } catch (error) {
-        console.log("❌ Error loading dashboard:", error);
-        res.status(500).send("Internal Server Error");
-    }
-});
-router.get('/add-post', authMiddleware, async (req, res) => {
-        console.log("req.user = ", req.user); 
-    try {
-        res.render('admin/add-post', { layout: adminLayout }); // if you have a form
-    } catch (error) {
-        console.log("❌ Error rendering add-post page:", error);
-        res.status(500).send("Internal Server Error");
-    }
-});
-// 🟢 Add post handler
-router.post('/add-post', authMiddleware, async (req, res) => {
-        console.log("req.user = ", req.user); 
-    try {
-        const { title, body ,image} = req.body;
-        const newPost = new Post({
-            title,
-            body,
-            image, // optional
-            user: req.user.userId 
-        });
-
-        await newPost.save();
-        res.redirect('/dashboard');
-    } catch (error) {
-        console.log("❌ Error adding post:", error);
-        res.status(500).send("Internal Server Error");
-    }
-});
-// 🟢 User registration
-router.post('/register', async (req, res) => {
-    try {
-        const { username, password } = req.body;
-        // console.log("📥 Incoming registration request:", { username, password });
-
-        if (!username || !password) {
-            return res.status(400).json({ message: 'Username and password are required' });
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = await User.create({ username, password: hashedPassword });
-
-        // console.log("✅ User created:", newUser);
-        return res.status(201).json({ message: 'User created', user: newUser });
-
-    } catch (error) {
-        console.error("❌ Registration error:", error);
-        if (error.code === 11000) {
-            return res.status(409).json({ message: 'User already exists' });
-        }
-        return res.status(500).json({ message: 'Internal server error' });
-    }
-});
-router.get('/edit-post/:id', authMiddleware, async (req, res) => {
-  try {
-    const post = await Post.findById(req.params.id);
-    if (!post) {
-      return res.status(404).send('Post not found');
-    }
-
-    // Optional: ensure the logged-in user owns the post
-    if (post.user._id.toString() !== req.user.userId) {
-      return res.status(403).send('Forbidden');
-    }
-
-    res.render('admin/edit-post', { post });
-  } catch (error) {
-    console.error('❌ Error loading post for edit:', error);
-    res.status(500).send('Server Error');
-  }
-});
-router.put('/edit-post/:id', authMiddleware, async (req, res) => {
-    try {
-        await Post.findByIdAndUpdate(req.params.id, {
-            title: req.body.title,
-            body: req.body.body,
-            updatedAt: Date.now()
-        });
-        res.redirect(`/edit-post/${req.params.id}`);
-    } catch (error) {
-        console.log("❌ Error editing post:", error);
-        res.status(500).send("Internal Server Error");
-    }
-});
-// 🟢 Delete post
-router.post('/delete-post/:id', authMiddleware, async (req, res) => {
-    try {
-        await Post.deleteOne({ _id: req.params.id });
-        res.redirect('/dashboard');
-    } catch (error) {
-        console.log("❌ Error deleting post:", error);
-        res.status(500).send("Internal Server Error");
-    }
-});
-// 🟢 Logout
-router.get('/logout', (req, res) => {
-    res.clearCookie('token');
-    res.redirect('/');
-});
-
-
-router.get('/Add-topics/:id', async (req, res) => {
-    try {
-        const postId = req.params.id;
-
-        
-        const post = await Post.findById(postId).populate('user', 'username');
-
-        if (!post) {
-            return res.status(404).send("Post not found");
-        }
-
-      
-        res.render('admin/add-topics', { post });
-
-    } catch (error) {
-        console.error("❌ Error fetching post:", error);
-        res.status(500).send("Internal Server Error");
-    }
-});
-
-router.post('/Add-topics/:id', authMiddleware, async (req, res) => {
-    
-    try {
-        const { name, link, body } = req.body;
-
-        if (!name) {
-            console.log("❌ 'name' is missing in form data!");
-        }
-
-        const topic = new Topic({
-            name: name,  // <-- This expects 'name' field
-            image: req.body.image,
-            body: req.body.body,
-            post: req.params.id
-        });
-
-        await topic.save();
-        res.redirect('/dashboard');
-    } catch (error) {
-        console.error("❌ Error adding topic:", error);
-        res.status(500).send("Internal Server Error");
-    }
-});
+// Topics
+router.get('/Add-topics/:id', topicController.renderAddTopics);
+router.post('/Add-topics/:id', auth, topicController.createTopic);
 
 module.exports = router;
