@@ -6,7 +6,11 @@ const UserSchema = new mongoose.Schema({
         required: true,
         unique: true 
     },
-    image: {
+    bio:{
+        type:String,
+        required:false
+    },
+    profile_pic: {
         type: String, 
         required: false
     },

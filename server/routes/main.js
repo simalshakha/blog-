@@ -3,6 +3,7 @@ const router =express.Router();
 
 const Post = require('../models/post');
 const Topic = require('../models/topics');
+const postController = require('../controllers/post');
 
 
 router.get('/', async (req, res) => {
@@ -32,22 +33,7 @@ router.get('/', async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 });
-
-    
-
-router.get('/post/:id', async (req, res) => {
-    try {
-        const slug = req.params.id;
-        const data = await Post.findById(slug).populate('user', 'username');
-        const topics = await Topic.find({ post: slug });
-        res.render('post', { data,username:data.user.username,topics });
-
-    } catch (error) {
-        console.log(error);
-        res.status(500).send("Internal Server Error");
-    }
-});
-
+router.get('/post/:id', postController.getPostById);
 
 
 router.post('/search', async (req, res) => {
@@ -66,7 +52,6 @@ router.post('/search', async (req, res) => {
 
         res.send("search"),data;
 
-        
 
     } catch (error) {
         console.log(error);

@@ -56,7 +56,7 @@ exports.updatePost = async (req, res) => {
       body: req.body.body,
       updatedAt: Date.now(),
     });
-    res.redirect(`/edit-post/${req.params.id}`);
+    res.redirect(`/dashboard`);
   } catch (error) {
     console.error("Edit post error:", error);
     res.status(500).send('Internal Server Error');
@@ -70,5 +70,26 @@ exports.deletePost = async (req, res) => {
   } catch (error) {
     console.error("Delete post error:", error);
     res.status(500).send('Internal Server Error');
+  }
+};
+
+exports.getPostById = async (req, res) => {
+  try {
+    const slug = req.params.id;
+
+    const data = await Post.findById(slug).populate('user', 'username');
+    if (!data) return res.status(404).send("Post not found");
+
+    const topics = await Topic.find({ post: slug });
+
+    res.render('post', {
+      data,
+      username: data.user.username,
+      topics,
+    });
+
+  } catch (error) {
+    console.error("❌ Error fetching post:", error);
+    res.status(500).send("Internal Server Error");
   }
 };
