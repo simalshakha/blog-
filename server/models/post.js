@@ -7,19 +7,15 @@ const PostSchema = new Schema({
     required: true
   },
   body: {
-    type: String,
-    required: true
+    type: String
   },
   image: {
-    type: String // optional
+    type: String 
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
-  },
-  link: {
-    type: String
   },
   createdAt: {
     type: Date,

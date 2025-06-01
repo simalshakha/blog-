@@ -11,8 +11,8 @@ const topicSchema = new mongoose.Schema({
     },
 
     image: {
-         type: String, // URL to image
-        required: false // image is optional
+        type: String, 
+        required: false 
     },
     body: {
     type: String,
@@ -20,7 +20,7 @@ const topicSchema = new mongoose.Schema({
     },
     post: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Blog', // Reference to Blog
+        ref: 'Blog', 
         required: true
     }
 });
