@@ -34,8 +34,6 @@ router.get('/', async (req, res) => {
     }
 });
 router.get('/post/:id', postController.getPostById);
-
-
 router.post('/search', async (req, res) => {
     try {
         let searchterm=req.body.searchterm;
@@ -58,18 +56,6 @@ router.post('/search', async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 });
-
-
-// function insertpostdata(){
-//     post.insertMany([
-//     {
-//         title:"building  a blog",
-//         body: "this is body"
-//     },
-// ])
-// }
-// insertpostdata();
-
 
 
 module.exports=router
