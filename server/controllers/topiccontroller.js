@@ -17,17 +17,23 @@ exports.renderAddTopics = async (req, res) => {
 exports.createTopic = async (req, res) => {
   try {
     const { type, content } = req.body;
+  
     console.log("Creating topic with type:", type, "and content:", content,"req.body:", req.params.id);
+
+
     if (!['image', 'text', 'header'].includes(type)) {
       return res.status(400).send('Invalid topic type');
     }
+    // await Topic.deleteMany({})
+    
     const topic = new Topic({
       type,
       content,
       post: req.params.id
     });
+
     await topic.save();
-    res.redirect('/dashboard');
+    // res.redirect('/dashboard');
   } catch (error) {
     console.error("Create topic error:", error);
     res.status(500).send('Internal Server Error');

@@ -20,7 +20,7 @@ router.get('/add-post', auth, postController.renderAddPost);
 router.post('/add-post', auth, postController.createPost);
 router.get('/edit-post/:id', auth, postController.renderEditPost);
 router.post('/edit-post/:id', auth, postController.updatePost);
-router.post('/delete-post/:id', auth, postController.deletePost);
+router.delete('/delete-post/:id', auth, postController.deletePost);
 
 // Topics
 router.get('/Add-topics/:id', topicController.renderAddTopics);
