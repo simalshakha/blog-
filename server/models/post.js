@@ -27,7 +27,6 @@ const PostSchema = new Schema({
   }
 });
 
-// Virtual to populate related topics
 PostSchema.virtual('topics', {
   ref: 'Topic',
   localField: '_id',

@@ -86,6 +86,7 @@ exports.getPostById = async (req, res) => {
       data,
       username: data.user.username,
       topics,
+      
     });
 
   } catch (error) {

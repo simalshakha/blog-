@@ -5,6 +5,7 @@ const authController = require('../controllers/auth');
 const postController = require('../controllers/post');
 const adminController = require('../controllers/admincontroller');
 const topicController = require('../controllers/topiccontroller');
+
 // Auth
 router.post('/admin', authController.login);
 router.post('/register', authController.register);

@@ -33,7 +33,9 @@ router.get('/', async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 });
+
 router.get('/post/:id', postController.getPostById);
+
 router.post('/search', async (req, res) => {
     try {
         let searchterm=req.body.searchterm;
