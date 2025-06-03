@@ -19,5 +19,20 @@
     </div>
   <% } %>
 
+  <h3>Edit Topics:</h3>
+  <% if (post.topics && post.topics.length > 0) { %>
+    <% post.topics.forEach((topic, index) => { %>
+      <div style="margin-bottom: 1rem;">
+        <select name="topics[<%= index %>][type]" required>
+          <option value="header" <%= topic.type === 'header' ? 'selected' : '' %>>Header</option>
+          <option value="text" <%= topic.type === 'text' ? 'selected' : '' %>>Text</option>
+          <option value="image" <%= topic.type === 'image' ? 'selected' : '' %>>Image</option>
+        </select>
+
+        <input type="text" name="topics[<%= index %>][content]" value="<%= topic.content %>" placeholder="Content" required />
+      </div>
+    <% }) %>
+  <% } %>
+
   <input type="submit" value="Update Post">
 </form>

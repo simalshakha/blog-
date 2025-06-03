@@ -1,5 +1,6 @@
-<h1><%= data.title %></h1>
 <p><strong>By:</strong> <%= username %></p>
+
+<h1><%= data.title %></h1>
 
 <article class="article">
     <% if (data.image) { %>
@@ -10,28 +11,26 @@
 
 <hr>
 
+
 <section class="topics">
-    <h2>Topics</h2>
     <% if (topics.length > 0) { %>
-        <ul>
-            <% topics.forEach(topic => { %>
-                <li style="margin-bottom: 1.5rem;">
-                    <% if (topic.type === 'header') { %>
-                        <h3><%= topic.content %></h3>
-                    <% } else if (topic.type === 'text') { %>
-                        <p><%= topic.content %></p>
-                    <% } else if (topic.type === 'image') { %>
-                        <img src="<%= topic.content %>" alt="Topic Image" style="max-width: 300px; border-radius: 8px;" />
-                    <% } %>
-                </li>
-            <% }) %>
-        </ul>
+        <% topics.forEach(topic => { %>
+            <div style="margin-bottom: 1.5rem;">
+                <% if (topic.type === 'header') { %>
+                    <h3><%= topic.content %></h3>
+                <% } else if (topic.type === 'text') { %>
+                    <p><%= topic.content %></p>
+                <% } else if (topic.type === 'image') { %>
+                    <img src="<%= topic.content %>" alt="Topic Image" style="max-width: 300px; border-radius: 8px;" />
+                <% } %>
+            </div>
+        <% }) %>
     <% } else { %>
         <p>No topics available for this post.</p>
     <% } %>
 </section>
 
-<a href="/dashboard">&larr; Back</a>
+
 
 <div class="admin-title">
     <h2>Add New Topic</h2>

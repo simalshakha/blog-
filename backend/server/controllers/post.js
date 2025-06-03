@@ -42,7 +42,10 @@ exports.renderEditPost = async (req, res) => {
     if (!post) return res.status(404).send('Post not found');
     if (post.user.toString() !== req.user.userId) return res.status(403).send('Forbidden');
 
-    res.render('admin/edit-post', { post });
+    // Extract topics from post
+    const topics = post.topics || [];
+
+    res.render('admin/edit-post', { post, topics });
   } catch (error) {
     console.error("Edit post render error:", error);
     res.status(500).send('Server Error');
@@ -51,12 +54,28 @@ exports.renderEditPost = async (req, res) => {
 
 exports.updatePost = async (req, res) => {
   try {
+    const { title, body, image, topics } = req.body;
+
+    // If topics is not an array, convert it to one
+    const formattedTopics = Array.isArray(topics)
+      ? topics.map(t => ({
+          type: t.type,
+          content: t.content
+        }))
+      : Object.values(topics || {}).map(t => ({
+          type: t.type,
+          content: t.content
+        }));
+
     await Post.findByIdAndUpdate(req.params.id, {
-      title: req.body.title,
-      body: req.body.body,
-      updatedAt: Date.now(),
+      title,
+      body,
+      image,
+      topics: formattedTopics,
+      updatedAt: Date.now()
     });
-    res.redirect(`/dashboard`);
+
+    res.redirect('/dashboard');
   } catch (error) {
     console.error("Edit post error:", error);
     res.status(500).send('Internal Server Error');
