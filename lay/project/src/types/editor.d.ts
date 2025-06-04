@@ -1,0 +1,17 @@
+declare module '@tiptap/core';
+declare module '@tiptap/extension-blockquote';
+declare module '@tiptap/extension-bullet-list';
+declare module '@tiptap/extension-code-block';
+declare module '@tiptap/extension-document';
+declare module '@tiptap/extension-dropcursor';
+declare module '@tiptap/extension-heading';
+declare module '@tiptap/extension-image';
+declare module '@tiptap/extension-list-item';
+declare module '@tiptap/extension-ordered-list';
+declare module '@tiptap/extension-paragraph';
+declare module '@tiptap/extension-placeholder';
+declare module '@tiptap/extension-task-item';
+declare module '@tiptap/extension-task-list';
+declare module '@tiptap/pm';
+declare module '@tiptap/react';
+declare module '@tiptap/starter-kit';
