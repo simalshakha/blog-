@@ -111,15 +111,9 @@ exports.getPostById = async (req, res) => {
 
     const data = await Post.findById(slug)
     if (!data) return res.status(404).send("Post not found");
-
-    const topics = await Topic.find({ post: slug });
-
-    res.json('post', {
-      data,
-      // username: data.user.username,
-      topics,
-      
-    });
+    console.log("Post data:", data);
+    // const topics = await Topic.find({ post: slug });
+    res.json(data);
 
   } catch (error) {
     console.error("❌ Error fetching post:", error);

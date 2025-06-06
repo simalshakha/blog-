@@ -4,7 +4,7 @@ const router =express.Router();
 const Post = require('../models/post');
 const Topic = require('../models/topics');
 const postController = require('../controllers/post');
-
+const upload = require('../middleware/multer.js');
 
 router.get('/', async (req, res) => {
     try {
@@ -22,11 +22,11 @@ router.get('/', async (req, res) => {
         const nextPage = page + 1;
         const hasNextPage = nextPage <= Math.ceil(count / perPage); 
         res.json({
-            locals,
             data,
             current: page,
             nextpage: hasNextPage ? nextPage : null
         });
+        console.log("data", data);
 
     } catch (error) {
         console.log(error);
@@ -58,6 +58,12 @@ router.post('/search', async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 });
-
-
+router.post('/upload-image', upload.single('image'), async (req, res) => {
+  try {
+    const imageUrl = req.file.path; // ← This is the Cloudinary URL
+    res.status(200).json({ imageUrl }); // Send to frontend or save in DB
+  } catch (err) {
+    res.status(500).json({ error: 'Image upload failed' });
+  }
+});
 module.exports=router

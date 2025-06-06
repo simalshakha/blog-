@@ -14,28 +14,52 @@ const EditorPage = () => {
   const [currentTag, setCurrentTag] = useState('');
   const [content, setContent] = useState<any>(null); // Store as object
 
-  const handleBannerUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBannerUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setBanner(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        const res = await fetch('http://localhost:5000/upload-image', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!res.ok) throw new Error('Failed to upload banner');
+
+        const data = await res.json();
+        setBanner(data.imageUrl); // Assuming your backend returns { imageUrl: '...' }
+      } catch (err) {
+        console.error('Upload error:', err);
+      }
     }
   };
 
-  const handleDrop = useCallback((event: React.DragEvent) => {
+
+  const handleDrop = useCallback(async (event: React.DragEvent) => {
     event.preventDefault();
     const file = event.dataTransfer.files[0];
     if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setBanner(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        const res = await fetch('http://localhost:5000/upload-image', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!res.ok) throw new Error('Failed to upload banner');
+
+        const data = await res.json();
+        setBanner(data.imageUrl);
+      } catch (error) {
+        console.error('Upload error:', error);
+      }
     }
   }, []);
+
 
   const handleDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
