@@ -2,7 +2,6 @@ const express =require('express');
 const router =express.Router();
 
 const Post = require('../models/post');
-const Topic = require('../models/topics');
 const postController = require('../controllers/post');
 const upload = require('../middleware/multer.js');
 

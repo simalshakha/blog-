@@ -17,7 +17,7 @@ interface Post {
   _id: string;
   title: string;
   description?: string;
-  banner: string | null;
+  image: string | null;
   tags: string[];
   content: {
     blocks: Block[];
@@ -57,10 +57,10 @@ const BlogPost = () => {
         <h1 className="text-4xl font-bold text-gray-900 mb-4">{post.title}</h1>
         <p className="text-gray-500 mb-6">{new Date(post.createdAt).toLocaleDateString()}</p>
 
-        {post.banner && (
+        {post.image && (
           <img
-            src={post.banner}
-            alt="Post banner"
+            src={post.image}
+            alt="Post image"
             className="w-full h-[400px] object-cover rounded-lg mb-8"
           />
         )}

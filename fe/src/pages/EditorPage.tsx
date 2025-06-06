@@ -7,14 +7,14 @@ const EditorPage = () => {
   const navigate = useNavigate();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
-  const [banner, setBanner] = useState<string | null>(null);
+  const [image, setimage] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [currentTag, setCurrentTag] = useState('');
   const [content, setContent] = useState<any>(null); // Store as object
 
-  const handleBannerUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleimageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const formData = new FormData();
@@ -26,10 +26,10 @@ const EditorPage = () => {
           body: formData,
         });
 
-        if (!res.ok) throw new Error('Failed to upload banner');
+        if (!res.ok) throw new Error('Failed to upload image');
 
         const data = await res.json();
-        setBanner(data.imageUrl); // Assuming your backend returns { imageUrl: '...' }
+        setimage(data.imageUrl); // Assuming your backend returns { imageUrl: '...' }
       } catch (err) {
         console.error('Upload error:', err);
       }
@@ -50,10 +50,10 @@ const EditorPage = () => {
           body: formData,
         });
 
-        if (!res.ok) throw new Error('Failed to upload banner');
+        if (!res.ok) throw new Error('Failed to upload image');
 
         const data = await res.json();
-        setBanner(data.imageUrl);
+        setimage(data.imageUrl);
       } catch (error) {
         console.error('Upload error:', error);
       }
@@ -80,7 +80,7 @@ const EditorPage = () => {
   const postData = {
     title,
     description,
-    banner,
+    image,
     tags,
     content, // This is your editor content object
   };
@@ -162,15 +162,15 @@ const EditorPage = () => {
             onDrop={handleDrop}
             onDragOver={handleDragOver}
           >
-            {banner ? (
+            {image ? (
               <div className="relative">
                 <img 
-                  src={banner} 
-                  alt="Banner" 
+                  src={image} 
+                  alt="image" 
                   className="w-full h-48 object-cover rounded-lg"
                 />
                 <button
-                  onClick={() => setBanner(null)}
+                  onClick={() => setimage(null)}
                   className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
                 >
                   ×
@@ -180,13 +180,13 @@ const EditorPage = () => {
               <div className="py-12">
                 <Upload className="w-8 h-8 mx-auto mb-4 text-gray-400" />
                 <label className="cursor-pointer">
-                  <span className="text-blue-600 hover:text-blue-700">Upload a banner</span>
+                  <span className="text-blue-600 hover:text-blue-700">Upload a image</span>
                   <span className="text-gray-500"> or drag and drop</span>
                   <input
                     type="file"
                     className="hidden"
                     accept="image/*"
-                    onChange={handleBannerUpload}
+                    onChange={handleimageUpload}
                   />
                 </label>
               </div>
@@ -269,8 +269,8 @@ const EditorPage = () => {
           {showPreview && (
             <div className="w-1/2 border-l p-8 overflow-auto h-[calc(100vh-3.5rem)]">
               <div className="prose dark:prose-invert max-w-none">
-                {banner && (
-                  <img src={banner} alt="Banner" className="w-full h-48 object-cover rounded-lg mb-8" />
+                {image && (
+                  <img src={image} alt="image" className="w-full h-48 object-cover rounded-lg mb-8" />
                 )}
                 <h1>{title || 'Untitled'}</h1>
                 {description && <p className="text-gray-600 dark:text-gray-400">{description}</p>}

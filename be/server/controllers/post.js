@@ -1,6 +1,5 @@
 const Post = require('../models/post');
 const User = require('../models/user');
-const Topic = require('../models/topics');
 
 exports.getDashboard = async (req, res) => {
   try {
@@ -27,18 +26,18 @@ exports.renderAddPost = (req, res) => {
 exports.createPost = async (req, res) => {
   console.log("",req.body);
   try {
-    const { title, description, banner, tags, content } = req.body;
+    const { title, description, image, tags, content } = req.body;
     // Save the entire content object from Editor.js
     const newPost = new Post({
       title,
       description,
-      banner,
+      image,
       tags,
       content, // This will store the Editor.js content (blocks, time, version, etc.)
       // user: req.user.userId,
     });
     await newPost.save();
-    
+    console.log("Post created:", newPost);
     // If this is an API endpoint, send JSON response:
     res.status(201).json({ message: 'Post created' });
     // If you want to redirect for form submissions, use:

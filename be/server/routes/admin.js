@@ -4,7 +4,7 @@ const auth = require('../middleware/authmiddleware');
 const authController = require('../controllers/auth');
 const postController = require('../controllers/post');
 const adminController = require('../controllers/admincontroller');
-const topicController = require('../controllers/topiccontroller');
+// const topicController = require('../controllers/topiccontroller');
 
 // Auth
 router.post('/admin', authController.login);
@@ -21,9 +21,6 @@ router.get('/edit-post/:id', auth, postController.renderEditPost);
 router.post('/edit-post/:id', auth, postController.updatePost);
 router.delete('/delete-post/:id', auth, postController.deletePost);
 
-// Topics
-router.get('/Add-topics/:id', topicController.renderAddTopics);
-router.post('/Add-topics/:id', auth, topicController.createTopic);
 
 
 router.post('/add-post',postController.createPost);

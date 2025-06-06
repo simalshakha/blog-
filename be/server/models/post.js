@@ -11,7 +11,7 @@ const PostSchema = new Schema({
     type: String,
     trim: true,
   },
-  banner: {
+  image: {
     type: String, // Store image URL or base64 string
   },
   tags: [{
