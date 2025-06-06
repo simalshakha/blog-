@@ -52,17 +52,34 @@ const EditorPage = () => {
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
-  const handlePublish = () => {
-    // Here you would typically save to your backend
-    console.log({
-      // title,
-      // description,
-      // banner,
-      // tags,
-      content, // Now an object, not a string
-    });
-    navigate('/dashboard');
+  const handlePublish = async () => {
+  const postData = {
+    title,
+    description,
+    banner,
+    tags,
+    content, // This is your editor content object
   };
+
+  try {
+    const response = await fetch('http://localhost:5000/add-post', { // Change URL to your backend endpoint
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(postData),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to publish post');
+    }
+
+    navigate('/dashboard');
+  } catch (error) {
+    console.error(error);
+    alert('Failed to publish post');
+  }
+};
 
   return (
     <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>

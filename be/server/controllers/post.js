@@ -25,11 +25,24 @@ exports.renderAddPost = (req, res) => {
 };
 
 exports.createPost = async (req, res) => {
+  console.log("",req.body);
   try {
-    const { title, body, image } = req.body;
-    const newPost = new Post({ title, body, image, user: req.user.userId });
+    const { title, description, banner, tags, content } = req.body;
+    // Save the entire content object from Editor.js
+    const newPost = new Post({
+      title,
+      description,
+      banner,
+      tags,
+      content, // This will store the Editor.js content (blocks, time, version, etc.)
+      // user: req.user.userId,
+    });
     await newPost.save();
-    res.redirect('/dashboard');
+    
+    // If this is an API endpoint, send JSON response:
+    res.status(201).json({ message: 'Post created' });
+    // If you want to redirect for form submissions, use:
+    // res.redirect('/dashboard');
   } catch (error) {
     console.error("Add post error:", error);
     res.status(500).send('Internal Server Error');
@@ -96,14 +109,14 @@ exports.getPostById = async (req, res) => {
   try {
     const slug = req.params.id;
 
-    const data = await Post.findById(slug).populate('user', 'username');
+    const data = await Post.findById(slug)
     if (!data) return res.status(404).send("Post not found");
 
     const topics = await Topic.find({ post: slug });
 
-    res.render('post', {
+    res.json('post', {
       data,
-      username: data.user.username,
+      // username: data.user.username,
       topics,
       
     });
