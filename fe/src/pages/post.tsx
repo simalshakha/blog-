@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { JSX, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 interface Block {
@@ -7,9 +7,10 @@ interface Block {
     text?: string;
     level?: number;
     style?: string;
-    items?: string[];
+    items?: any[];
     caption?: string;
     file?: { url: string };
+    [key: string]: any;
   };
 }
 
@@ -23,6 +24,61 @@ interface Post {
     blocks: Block[];
   };
   createdAt: string;
+}
+
+function renderBlock(block: Block): React.ReactNode {
+  switch (block.type) {
+    case 'paragraph':
+      return <p>{block.data.text}</p>;
+    case 'header':
+      const HeaderTag = `h${block.data.level || 2}` as keyof JSX.IntrinsicElements;
+      return React.createElement(HeaderTag, null, block.data.text);
+    case 'list':
+      // Render ordered or unordered list
+      const items = block.data.items || [];
+      if (block.data.style === 'ordered') {
+        return (
+          <ol>
+            {items.map((item, idx) => (
+              <li key={idx}>
+                {typeof item === 'string'
+                  ? item
+                  : item?.content || item?.text || ''}
+              </li>
+            ))}
+          </ol>
+        );
+      } else {
+        return (
+          <ul>
+            {items.map((item, idx) => (
+              <li key={idx}>
+                {typeof item === 'string'
+                  ? item
+                  : item?.content || item?.text || ''}
+              </li>
+            ))}
+          </ul>
+        );
+      }
+    case 'image':
+      return (
+        <img
+          src={block.data.file?.url}
+          alt={block.data.caption || ''}
+          className="my-4 rounded-lg"
+        />
+      );
+    case 'quote':
+      return (
+        <blockquote>
+          <p>{block.data.text}</p>
+          {block.data.caption && <cite>{block.data.caption}</cite>}
+        </blockquote>
+      );
+    default:
+      return null;
+  }
 }
 
 const BlogPost = () => {
@@ -84,67 +140,5 @@ const BlogPost = () => {
     </div>
   );
 };
-
-function renderBlock(block: Block) {
-  switch (block.type) {
-    case 'header':
-      const headerLevel = block.data.level && block.data.level >= 1 && block.data.level <= 6 ? block.data.level : 2;
-      const HeaderTag = `h${headerLevel}`;
-      return React.createElement(
-        HeaderTag,
-        { className: "font-bold my-4" },
-        block.data.text
-      );
-
-    case 'paragraph':
-      return <p className="text-gray-800 mb-4">{block.data.text}</p>;
-
-    case 'image':
-      return (
-        <figure className="my-6">
-          <img
-            src={block.data.file?.url}
-            alt={block.data.caption || 'Image'}
-            className="w-full rounded-lg"
-          />
-          {block.data.caption && (
-            <figcaption className="text-center text-sm text-gray-500 mt-2">
-              {block.data.caption}
-            </figcaption>
-          )}
-        </figure>
-      );
-
-    case 'list':
-      const ListTag = block.data.style === 'ordered' ? 'ol' : 'ul';
-      return (
-        <ListTag className={`pl-6 mb-4 ${block.data.style === 'ordered' ? 'list-decimal' : 'list-disc'}`}>
-          {block.data.items?.map((item, idx) => (
-            <li key={idx}>{item}</li>
-          ))}
-        </ListTag>
-      );
-
-    case 'quote':
-      return (
-        <blockquote className="border-l-4 border-gray-300 pl-4 italic text-gray-600 my-6">
-          {block.data.text}
-        </blockquote>
-      );
-
-    case 'code':
-      return (
-        <pre className="bg-gray-100 p-4 rounded-lg overflow-x-auto my-6">
-          <code>{block.data.text}</code>
-        </pre>
-      );
-
-    case 'delimiter':
-      return <hr className="my-8 border-gray-300" />;
-
-    default:
-      return null;
-  }
-}
 
 export default BlogPost;
