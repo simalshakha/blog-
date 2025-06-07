@@ -4,6 +4,8 @@ import HomePage from './pages/HomePage';
 import EditorPage from './pages/EditorPage';
 import DashboardPage from './pages/DashboardPage';
 import BlogPost from './pages/post';
+import LoginPage from './pages/login';
+import SignUpPage from './pages/signup';
 
 function App() {
   return (
@@ -13,6 +15,8 @@ function App() {
         <Route path="/editor" element={<EditorPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/post/:id" element={<BlogPost />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignUpPage />} />
       </Routes>
     </Router>
   );

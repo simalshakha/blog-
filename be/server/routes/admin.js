@@ -7,12 +7,12 @@ const adminController = require('../controllers/admincontroller');
 // const topicController = require('../controllers/topiccontroller');
 
 // Auth
-router.post('/admin', authController.login);
+router.post('/login', authController.login);
 router.post('/register', authController.register);
 router.get('/logout', authController.logout);
 
 // Admin
-router.get('/admin', adminController.getAdminPage);
+router.get('/login', adminController.getAdminPage);
 router.get('/dashboard', auth, postController.getDashboard);
 
 // Posts
@@ -23,6 +23,6 @@ router.delete('/delete-post/:id', auth, postController.deletePost);
 
 
 
-router.post('/add-post',postController.createPost);
+router.post('/add-post',auth,postController.createPost);
 
 module.exports = router;

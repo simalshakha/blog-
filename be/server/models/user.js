@@ -1,23 +1,32 @@
-const mongoose = require('mongoose');
+// models/User.ts
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
-const UserSchema = new mongoose.Schema({
-    username: {
-        type: String,
-        required: true,
-        unique: true 
-    },
-    bio:{
-        type:String,
-        required:false
-    },
-    profile_pic: {
-        type: String, 
-        required: false
-    },
-    password: {
-        type: String,
-        required: true
-    }
+const userSchema = new mongoose.Schema({
+  fullName: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  email: {
+    type: String,
+    unique: true,
+    required: true,
+    lowercase: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user',
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
-module.exports = mongoose.model('User', UserSchema); 
+export const User = mongoose.model('User', userSchema);

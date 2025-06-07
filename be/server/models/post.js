@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
+const User = require('./user'); // Assuming user model is in the same directory
 
 const PostSchema = new Schema({
   title: {
@@ -22,11 +23,11 @@ const PostSchema = new Schema({
     type: Object, // Stores the full Editor.js output (blocks, time, version, etc.)
     required: true,
   },
-  // user: {
-  //   type: Schema.Types.ObjectId,
-  //   ref: 'User',
-  //   required: true,
-  // },
+  User: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

@@ -50,7 +50,7 @@ const HomePage = () => {
               <span className="font-semibold text-xl">Markflow</span>
             </div>
             <button
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/login')}
               className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-all"
             >
               <LogIn className="w-4 h-4 mr-2" />
@@ -125,7 +125,7 @@ const HomePage = () => {
 
         <div className="mt-16 text-center">
           <button
-            onClick={() => navigate('/editor')}
+            onClick={() => navigate('/signup')}
             className="inline-flex items-center px-8 py-4 rounded-xl text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 backdrop-blur-sm"
           >
             Start Writing
