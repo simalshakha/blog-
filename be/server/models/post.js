@@ -21,10 +21,10 @@ const PostSchema = new Schema({
   }],
   content: {
     type: Object, // Stores the full Editor.js output (blocks, time, version, etc.)
-    required: true,
+    // required: true,
   },
-  User: {
-    type: Schema.Types.ObjectId,
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
   },

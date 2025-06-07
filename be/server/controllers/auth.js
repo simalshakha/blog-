@@ -6,38 +6,92 @@ const jwtSecret = process.env.JWT_SECRET;
 
 exports.login = async (req, res) => {
   try {
-    const { username, password } = req.body;
-    const user = await User.findOne({ username });
-    if (!user) return res.status(401).send('User not found');
+    const { email, password } = req.body;
 
-    const isValid = await bcrypt.compare(password, user.password);
-    if (!isValid) return res.status(401).send('Invalid credentials');
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
 
-    const token = jwt.sign({ userId: user._id }, jwtSecret);
+    // If you're using bcrypt, compare passwords here:
+    // const isMatch = await bcrypt.compare(password, user.password);
+    // if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
+
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '1d' }
+    );
+
     res.cookie('token', token, { httpOnly: true });
-    res.redirect('/dashboard');
+
+    // ✅ Always send response
+    return res.status(200).json({
+      message: 'Login successful',
+      token, // optional if you're storing in cookie
+      user: { id: user._id, name: user.name, role: user.role }
+    });
   } catch (error) {
     console.error("Login error:", error);
-    res.status(500).send('Internal Server Error');
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
+
 
 exports.register = async (req, res) => {
   try {
-    const { username, password } = req.body;
-    if (!username || !password) return res.status(400).json({ message: 'Missing credentials' });
+    const { fullName, email, password, confirmPassword } = req.body;
 
+    // Basic validation
+    if (!fullName || !email || !password || !confirmPassword) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: 'Passwords do not match' });
+    }
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({ message: 'Email already in use' });
+    }
+
+    // Hash password (optional if your model uses pre-save middleware)
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await User.create({ username, password: hashedPassword });
 
-    res.status(201).json({ message: 'User created', user: newUser });
+    // Create new user
+    const newUser = new User({
+      fullName,
+      email,
+      password: hashedPassword,
+    });
+
+    await newUser.save();
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { id: newUser._id, role: newUser.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '1d' }
+    );
+
+    res.status(201).json({
+      success: true,
+      message: 'User registered successfully',
+      token,
+      user: {
+        id: newUser._id,
+        fullName: newUser.fullName,
+        email: newUser.email,
+      },
+    });
   } catch (error) {
-    console.error("Registration error:", error);
-    if (error.code === 11000) return res.status(409).json({ message: 'User already exists' });
-    res.status(500).json({ message: 'Internal server error' });
+    console.error('Registration error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 };
-
 exports.logout = (req, res) => {
   res.clearCookie('token');
   res.redirect('/');

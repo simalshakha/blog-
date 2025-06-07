@@ -77,33 +77,40 @@ const EditorPage = () => {
   };
 
   const handlePublish = async () => {
-  const postData = {
-    title,
-    description,
-    image,
-    tags,
-    content, // This is your editor content object
+    const postData = {
+      title,
+      description,
+      image,
+      tags,
+      content,
+    };
+
+    // Get JWT token from localStorage (or sessionStorage if you're using that)
+    const token = localStorage.getItem('token'); // Make sure it's stored during login
+
+    try {
+      const response = await fetch('http://localhost:5000/add-post', {
+        method: 'POST',
+        credentials: 'include',
+
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`, // <-- Include JWT here
+        },
+        body: JSON.stringify(postData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to publish post');
+      }
+
+      navigate('/dashboard');
+    } catch (error) {
+      console.error(error);
+      alert('Failed to publish post');
+    }
   };
 
-  try {
-    const response = await fetch('http://localhost:5000/add-post', { // Change URL to your backend endpoint
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(postData),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to publish post');
-    }
-
-    navigate('/dashboard');
-  } catch (error) {
-    console.error(error);
-    alert('Failed to publish post');
-  }
-};
 
   return (
     <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>

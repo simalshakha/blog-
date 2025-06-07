@@ -1,6 +1,5 @@
-// models/User.ts
-import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs';
+const mongoose = require('mongoose');
+
 
 const userSchema = new mongoose.Schema({
   fullName: {
@@ -29,4 +28,4 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-export const User = mongoose.model('User', userSchema);
+module.exports = mongoose.model('User', userSchema);

@@ -41,17 +41,43 @@ const LoginPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    setErrors({}); // reset errors
+
+    try {
+      const response = await fetch('http://localhost:5000/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', 
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Handle backend error
+        setErrors({ general: data.message || 'Invalid credentials' });
+        setIsLoading(false);
+        return;
+      }
+
+      // Save token (for example, in localStorage)
+      localStorage.setItem('token', data.token);
+
+      // Redirect
       navigate('/dashboard');
-    }, 1500);
+    } catch (err) {
+      console.error(err);
+      setErrors({ general: 'Something went wrong. Please try again.' });
+      setIsLoading(false);
+    }
   };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">

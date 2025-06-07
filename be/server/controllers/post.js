@@ -23,30 +23,45 @@ exports.renderAddPost = (req, res) => {
   res.render('admin/add-post', { layout: '../views/layouts/admin' });
 };
 
+
 exports.createPost = async (req, res) => {
-  console.log("",req.body);
+  console.log("Request body:", req.body);
+  console.log("Request user:", req.user); // Debugging line to check user info
+
   try {
     const { title, description, image, tags, content } = req.body;
-    // Save the entire content object from Editor.js
+
+    // ✅ Basic validation
+    if (!title || !description) {
+      return res.status(400).json({ message: 'Title, description, and content are required.' });
+    }
+
+
+    // ✅ Create new post document
     const newPost = new Post({
       title,
       description,
       image,
-      tags,
-      content, // This will store the Editor.js content (blocks, time, version, etc.)
-      // user: req.user.userId,
+      tags: tags,
+      content,
+      user: req.user.id, // ← comes from authMiddleware after JWT verification
     });
+
     await newPost.save();
-    console.log("Post created:", newPost);
-    // If this is an API endpoint, send JSON response:
-    res.status(201).json({ message: 'Post created' });
-    // If you want to redirect for form submissions, use:
-    // res.redirect('/dashboard');
+    console.log("✅ Post created:", newPost);
+
+    res.status(201).json({ message: 'Post created successfully', post: newPost });
   } catch (error) {
-    console.error("Add post error:", error);
-    res.status(500).send('Internal Server Error');
+    console.error("❌ Add post error:", error);
+
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ message: 'Validation failed', errors: error.errors });
+    }
+
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
 
 exports.renderEditPost = async (req, res) => {
   try {
