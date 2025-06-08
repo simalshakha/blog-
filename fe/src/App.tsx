@@ -6,6 +6,7 @@ import DashboardPage from './pages/DashboardPage';
 import BlogPost from './pages/post';
 import LoginPage from './pages/login';
 import SignUpPage from './pages/signup';
+import Editor from './components/Editor';
 
 function App() {
   return (
