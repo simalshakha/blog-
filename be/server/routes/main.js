@@ -59,10 +59,24 @@ router.post('/search', async (req, res) => {
 });
 router.post('/upload-image', upload.single('image'), async (req, res) => {
   try {
-    const imageUrl = req.file.path; // ← This is the Cloudinary URL
-    res.status(200).json({ imageUrl }); // Send to frontend or save in DB
+    const imageUrl = req.file.path; // Either a Cloudinary URL or a local path
+
+    // Send response in Editor.js expected format
+    res.status(200).json({
+      success: 1,
+      file: {
+        url: imageUrl
+      }
+    });
+
+    console.log("Image uploaded successfully:", imageUrl);
   } catch (err) {
-    res.status(500).json({ error: 'Image upload failed' });
+    console.error('Upload error:', err);
+    res.status(500).json({
+      success: 0,
+      message: 'Image upload failed'
+    });
   }
 });
+
 module.exports=router

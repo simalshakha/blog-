@@ -8,7 +8,6 @@ const connectdb = require('./server/config/db');
 const passport = require('./server/config/passport');
 const methodOverride = require('method-override');
 
-
 const cors = require('cors');
 
 const app = express();

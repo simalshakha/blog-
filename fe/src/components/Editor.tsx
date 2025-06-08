@@ -29,7 +29,7 @@ const Editor: React.FC<EditorProps> = ({ initialContent, onChange }) => {
   const editorRef = useRef<EditorJS | null>(null);
   const editorElementRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (editorRef.current || !editorElementRef.current) return;
@@ -78,14 +78,36 @@ const Editor: React.FC<EditorProps> = ({ initialContent, onChange }) => {
         config: {
           uploader: {
             uploadByFile(file: File) {
-              // Local blob URL fallback (you can replace with real upload logic)
-              return Promise.resolve({
-                success: 1,
-                file: {
-                  url: URL.createObjectURL(file),
-                },
-              });
-            },
+              const formData = new FormData();
+              formData.append('image', file);
+
+              return fetch('http://localhost:5000/upload-image', {
+                method: 'POST',
+                body: formData,
+              })
+                .then(async (res) => {
+                  if (!res.ok) throw new Error('Upload failed');
+                  const result = await res.json();
+
+                  const imageUrl = result.file?.url || result.url; // fallback
+                  if (!imageUrl) throw new Error('Invalid response from server');
+
+                  return {
+                    success: 1,
+                    file: {
+                      url: imageUrl,
+                    },
+                  };
+                })
+                .catch((err) => {
+                  console.error('Image upload failed:', err);
+                  return {
+                    success: 0,
+                  };
+                });
+            }
+
+
           },
         },
       },
@@ -123,14 +145,7 @@ const Editor: React.FC<EditorProps> = ({ initialContent, onChange }) => {
     };
   }, []); // Empty dependency: only initialize once
 
-  const handleSave = async () => {
-    if (editorRef.current) {
-      setIsSaving(true);
-      const content = await editorRef.current.save();
-      localStorage.setItem('editorjs-content', JSON.stringify(content));
-      setTimeout(() => setIsSaving(false), 1000);
-    }
-  };
+
 
   return (
     <div className="editor-wrapper">
