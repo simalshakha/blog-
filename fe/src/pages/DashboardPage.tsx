@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface Post {
-  body(body: any): unknown;
   _id: string;
   title: string;
   content: string;
@@ -14,6 +14,7 @@ const Dashboard = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate(); // Added this line
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -23,7 +24,6 @@ const Dashboard = () => {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
-        console.log('Response status:', res);
 
         if (!res.ok) {
           throw new Error('Failed to fetch dashboard');
@@ -32,7 +32,6 @@ const Dashboard = () => {
         const json = await res.json();
         setPosts(json.data);
         setUsername(json.username);
-        
       } catch (err) {
         console.error('Dashboard error:', err);
       } finally {
@@ -54,23 +53,18 @@ const Dashboard = () => {
       ) : (
         <div className="space-y-4">
           {posts.map((post) => (
-            <div
+            <article
               key={post._id}
-              className="p-4 bg-white shadow-md rounded-lg border"
+              className="group cursor-pointer p-4 bg-white shadow-md rounded-lg border"
+              onClick={() => navigate(`/post/${post._id}`)}
             >
               <h2 className="text-xl font-semibold mb-2">{post.title}</h2>
-
-              {/* Safely render parsed Editor.js content */}
-          
-
-             
-            </div>
+            </article>
           ))}
         </div>
       )}
     </div>
   );
-
 };
 
 export default Dashboard;
