@@ -21,7 +21,10 @@ const HomePage = () => {
         const res = await fetch('http://localhost:5000/', {
           credentials: 'include',
         });
+
         const json = await res.json();
+        console.log('Fetched data:', json);
+
         if (Array.isArray(json.data)) {
           setPosts(json.data);
         } else {
@@ -38,18 +41,17 @@ const HomePage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-white">
-      {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 bg-white/70 backdrop-blur-md border-b border-gray-200 z-50 shadow-sm">
+    <div className="min-h-screen bg-white">
+      <nav className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-sm border-b border-gray-100 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center space-x-2">
               <Pen className="w-6 h-6 text-blue-600" />
-              <span className="font-bold text-2xl tracking-tight text-gray-800">Markflow</span>
+              <span className="font-semibold text-xl">Markflow</span>
             </div>
             <button
               onClick={() => navigate('/login')}
-              className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-100 transition"
+              className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-all"
             >
               <LogIn className="w-4 h-4 mr-2" />
               Sign In
@@ -58,68 +60,73 @@ const HomePage = () => {
         </div>
       </nav>
 
-      {/* Main */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
-        {/* Header */}
-        <header className="mb-12 text-center">
-          <h1 className="text-4xl font-extrabold text-gray-900 mb-2">Latest Stories</h1>
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
+        <div className="mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Latest Stories</h1>
           <p className="text-lg text-gray-600">
-            Thoughtful writing on travel, food, tech, and life.
+            Discover thoughtful writing on travel, food, and personal experiences.
           </p>
-        </header>
+        </div>
 
-        {/* Posts */}
         {loading ? (
-          <p className="text-center text-gray-500 text-sm">Loading posts...</p>
+          <p className="text-center text-gray-500">Loading posts...</p>
         ) : posts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="space-y-12">
             {posts.map((post) => (
-              <div
+              <article
                 key={post._id}
+                className="group cursor-pointer"
                 onClick={() => navigate(`/post/${post._id}`)}
-                className="bg-white rounded-xl shadow-md hover:shadow-xl transition cursor-pointer group overflow-hidden"
               >
-                <div className="h-44 w-full overflow-hidden bg-gray-100">
-                  {post.image ? (
-                    <img
-                      src={post.image}
-                      alt={post.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-sm text-gray-400">
-                      No Image Available
+                <div className="flex items-start gap-8">
+                  <div className="flex-1">
+                    <div className="mb-2">
+                      <span className="text-sm text-gray-600 font-medium">
+                        Blog
+                      </span>
                     </div>
-                  )}
-                </div>
-                <div className="p-5">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-7 h-7 bg-gray-300 rounded-full" />
-                    <span className="text-sm text-gray-500 font-medium">
-                      {post.user || 'Unknown Author'}
-                    </span>
+
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="w-6 h-6 rounded-full bg-gray-200" />
+                      <span className="text-sm text-gray-600">Author</span>
+                    </div>
+
+                    <h2 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                      {post.title}
+                    </h2>
+                    <p className="text-gray-600 mb-4 line-clamp-3">{post.body}</p>
+
+                    <div className="flex items-center gap-1 text-gray-500">
+                      <Heart className="w-4 h-4" />
+                      <span className="text-sm">0</span>
+                    </div>
                   </div>
-                  <h2 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors mb-1">
-                    {post.title}
-                  </h2>
-                  <p className="text-sm text-gray-600 line-clamp-3">{post.body}</p>
-                  <div className="mt-4 flex items-center text-gray-400 text-xs gap-1">
-                    <Heart className="w-4 h-4" />
-                    <span>0</span>
+
+                  <div className="w-48 h-32 overflow-hidden rounded-lg bg-gray-100">
+                    {post.image ? (
+                      <img
+                        src={post.image}
+                        alt={post.title}
+                        className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+                        No Image
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
+              </article>
             ))}
           </div>
         ) : (
           <p className="text-center text-gray-500">No posts found.</p>
         )}
 
-        {/* CTA */}
-        <div className="mt-24 text-center">
+        <div className="mt-16 text-center">
           <button
             onClick={() => navigate('/signup')}
-            className="inline-flex items-center px-10 py-4 rounded-xl text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 transition shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+            className="inline-flex items-center px-8 py-4 rounded-xl text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 backdrop-blur-sm"
           >
             Start Writing
             <Pen className="w-5 h-5 ml-2" />

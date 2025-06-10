@@ -3,21 +3,37 @@ const User = require('../models/user');
 
 exports.getDashboard = async (req, res) => {
   try {
-    const user = await User.findById(req.user.userId).select('username');
-    if (!user) return res.status(404).send('User not found');
+    const userId = req.user.userId || req.user.id; // Support either .userId or .id
 
-    const data = await Post.find({ user: req.user.userId }).populate('user', 'username');
-    res.render('admin/dashboard', {
-      layout: '../views/layouts/admin',
-      locals: { title: 'Dashboard', description: 'Blog dashboard' },
-      data,
-      username: user.username,
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized: No user ID found in request" });
+    }
+
+    // Fetch the user
+    const user = await User.findById(userId);
+    console.log("Fetched user:", user);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Fetch all posts belonging to the user
+    const posts = await Post.find({ user: userId }).populate("user", "username");
+    console.log("Fetched posts:", posts);
+    // Respond with posts and username
+    res.json({
+      data: posts,
+      username: user.fullName
     });
+    // console.log("Dashboard data sent successfully:", {
+    //   posts: posts.length,
+    //   username: user.username,
+    // });
   } catch (error) {
     console.error("Dashboard error:", error);
-    res.status(500).send('Internal Server Error');
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 
 exports.renderAddPost = (req, res) => {
   res.render('admin/add-post', { layout: '../views/layouts/admin' });
