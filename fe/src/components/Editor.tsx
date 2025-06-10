@@ -100,17 +100,16 @@ const Editor: React.FC<EditorProps> = ({ initialContent, onChange }) => {
                   };
                 })
                 .catch((err) => {
-                  console.error('Image upload failed:', err);
+                  console.error('Image upload failed:', err); // ✅ Use console, not con
                   return {
                     success: 0,
                   };
                 });
             }
-
-
           },
         },
       },
+      
       delimiter: {
         class: Delimiter,
       },

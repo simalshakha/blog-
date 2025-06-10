@@ -128,7 +128,8 @@ exports.updatePost = async (req, res) => {
 exports.deletePost = async (req, res) => {
   try {
     await Post.findByIdAndDelete(req.params.id);
-    res.redirect('/dashboard');
+    res.status(200).json({ message: 'Post deleted' });
+    // res.redirect('/dashboard');
   } catch (error) {
     console.error("Delete post error:", error);
     res.status(500).send('Internal Server Error');

@@ -27,9 +27,10 @@ const EditorPage = () => {
         });
 
         if (!res.ok) throw new Error('Failed to upload image');
-
         const data = await res.json();
-        setimage(data.imageUrl); // Assuming your backend returns { imageUrl: '...' }
+        console.error('data received:', data);
+        const imageUrl = data.file?.url || data.url;
+        setimage(imageUrl); // Assuming your backend returns { imageUrl: '...' }
       } catch (err) {
         console.error('Upload error:', err);
       }
