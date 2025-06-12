@@ -7,7 +7,7 @@ import BlogPost from './pages/post';
 import LoginPage from './pages/login';
 import SignUpPage from './pages/signup';
 import UpdatePostPage from './pages/update';
-
+import ContentEditPage from './pages/contentedit';
 function App() {
   return (
     <Router>
@@ -15,6 +15,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/editor" element={<EditorPage />} />
         <Route path="/update/:id" element={<UpdatePostPage />} />
+        <Route path="/content-edit/:id" element={<ContentEditPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/post/:id" element={<BlogPost />} />
         <Route path="/login" element={<LoginPage />} />

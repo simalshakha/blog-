@@ -113,7 +113,7 @@ const EditorPage = () => {
   };
 
 
- return (
+  return (
     <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
       <div 
         className={`fixed top-0 left-0 right-0 z-10 border-b bg-opacity-80 backdrop-blur-sm transition-colors duration-200 ${
@@ -263,7 +263,16 @@ const EditorPage = () => {
 
         <div className="flex">
           <div className={`flex-1 transition-all ${showPreview ? 'w-1/2' : 'w-full'}`}>
-            <Editor />
+            <Editor
+              onChange={(data) => {
+                try {
+                  setContent(JSON.parse(data));
+                } catch {
+                  setContent(null);
+                }
+              }}
+              initialContent={content ? JSON.stringify(content) : ''}
+            />
           </div>
           {showPreview && (
             <div className="w-1/2 border-l p-8 overflow-auto h-[calc(100vh-3.5rem)]">
@@ -273,7 +282,21 @@ const EditorPage = () => {
                 )}
                 <h1>{title || 'Untitled'}</h1>
                 {description && <p className="text-gray-600 dark:text-gray-400">{description}</p>}
-                {/* Editor content preview will be rendered here */}
+                {/* Render editor content preview */}
+                {content?.blocks?.map((block: any) => (
+                  <div key={block.id}>
+                    {block.type === 'paragraph' && <p>{block.data.text}</p>}
+                    {block.type === 'header' && <h2>{block.data.text}</h2>}
+                    {block.type === 'list' && (
+                      <ul>
+                        {block.data.items.map((item: any, idx: number) => (
+                          <li key={idx}>{item.content || item}</li>
+                        ))}
+                      </ul>
+                    )}
+                    {/* Add more block types as needed */}
+                  </div>
+                ))}
               </div>
             </div>
           )}

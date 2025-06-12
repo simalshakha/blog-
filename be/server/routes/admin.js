@@ -4,6 +4,7 @@ const auth = require('../middleware/authmiddleware');
 const authController = require('../controllers/auth');
 const postController = require('../controllers/post');
 const adminController = require('../controllers/admincontroller');
+const Post = require('../models/post');
 // const topicController = require('../controllers/topiccontroller');
 
 // Auth
@@ -24,5 +25,32 @@ router.delete('/delete-post/:id', auth, postController.deletePost);
 
 
 router.post('/add-post',auth,postController.createPost);
+
+
+router.put('/post/:id/content', auth, async (req, res) => {
+  const { id } = req.params;
+  const { content } = req.body;
+
+  if (!content || typeof content !== 'object') {
+    return res.status(400).json({ message: 'Invalid or missing content' });
+  }
+
+  try {
+    const updatedPost = await Post.findByIdAndUpdate(
+      id,
+      { content, updatedAt: new Date() },
+      { new: true }
+    );
+
+    if (!updatedPost) {
+      return res.status(404).json({ message: 'Post not found.' });
+    }
+
+    res.status(200).json(updatedPost);
+  } catch (error) {
+    console.error('Error updating content:', error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+});
 
 module.exports = router;

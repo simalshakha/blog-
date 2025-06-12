@@ -140,7 +140,7 @@ const EditorPage = () => {
         throw new Error('Failed to publish post');
       }
 
-      navigate('/dashboard');
+      navigate('/content-edit/' + id);
     } catch (error) {
       console.error(error);
       alert('Failed to publish post');
@@ -297,9 +297,7 @@ const EditorPage = () => {
 
         <div className="flex">
           <div className={`flex-1 transition-all ${showPreview ? 'w-1/2' : 'w-full'}`}>
-            <Editor
-              initialContent={typeof content === 'string' ? content : JSON.stringify(content)}
-            />
+      
           </div>
           {showPreview && (
             <div className="w-1/2 border-l p-8 overflow-auto h-[calc(100vh-3.5rem)]">
