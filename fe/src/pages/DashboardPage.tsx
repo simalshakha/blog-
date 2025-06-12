@@ -62,8 +62,8 @@ const Dashboard = () => {
   };
 
   const handleEdit = (postId: string, e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent navigation
-    navigate(`/edit/${postId}`);
+    e.stopPropagation(); // Prevent navigation to post view
+    navigate(`/update/${postId}`); // Updated to point to update route
   };
 
   if (loading) return <p>Loading...</p>;
@@ -83,7 +83,7 @@ const Dashboard = () => {
               onClick={() => navigate(`/post/${post._id}`)}
             >
               <h2 className="text-xl font-semibold mb-2">{post.title}</h2>
-              
+
               <div className="absolute top-4 right-4 flex space-x-2">
                 <button
                   onClick={(e) => handleEdit(post._id, e)}

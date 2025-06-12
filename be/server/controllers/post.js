@@ -97,30 +97,29 @@ exports.renderEditPost = async (req, res) => {
 
 exports.updatePost = async (req, res) => {
   try {
-    const { title, body, image, topics } = req.body;
+    const { title, description, image, tags, content } = req.body;
 
-    // If topics is not an array, convert it to one
-    const formattedTopics = Array.isArray(topics)
-      ? topics.map(t => ({
-          type: t.type,
-          content: t.content
-        }))
-      : Object.values(topics || {}).map(t => ({
-          type: t.type,
-          content: t.content
-        }));
+    const updatedPost = await Post.findByIdAndUpdate(
+      req.params.id,
+      {
+        title,
+        description,
+        image,
+        tags,
+        content,
+        user: req.user.id,
+        updatedAt: Date.now(),
+      },
+      { new: true } // Return the updated document
+    );
 
-    await Post.findByIdAndUpdate(req.params.id, {
-      title,
-      body,
-      image,
-      topics: formattedTopics,
-      updatedAt: Date.now()
-    });
+    if (!updatedPost) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
 
-    res.redirect('/dashboard');
+    return res.status(200).json({ message: 'Post updated successfully', post: updatedPost });
   } catch (error) {
-    console.error("Edit post error:", error);
+    console.error('Edit post error:', error);
     res.status(500).send('Internal Server Error');
   }
 };
