@@ -104,8 +104,8 @@ const EditorPage = () => {
       if (!response.ok) {
         throw new Error('Failed to publish post');
       }
-
-      navigate('/dashboard');
+  
+      navigate('/dashboard'); 
     } catch (error) {
       console.error(error);
       alert('Failed to publish post');

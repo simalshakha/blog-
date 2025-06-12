@@ -26,7 +26,11 @@ const Editor: React.FC = () => {
   const editorRef = useRef<EditorJS | null>(null);
   const editorElementRef = useRef<HTMLDivElement>(null);
   const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  
+  const [initialContent, setInitialContent] = useState<any>(null); // Only used to initialize once
+  const hasFetchedContent = useRef(false); // Tracks if fetch has completed
+  const isEditorInitializedRef = useRef(false); // Tracks if EditorJS is initialized
+  const editorContentRef = useRef<string>(''); // Store editor content as string
+
   const [content, setContent] = useState<any>(null); 
 
   const tools: EditorTools = {
@@ -107,79 +111,76 @@ const Editor: React.FC = () => {
   // Example: get id from URL query params using window.location or React Router (adjust as needed)
 
 
-  useEffect(() => {
-    const fetchPost = async () => {
-      try {
-        if (!id) throw new Error('No post ID provided');
-        const res = await fetch(`http://localhost:5000/post/${id}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-
-        if (!res.ok) throw new Error('Failed to fetch post');
-
-        const json = await res.json();
-        console.log("Editor content:", json.content); 
-        console.log('Fetched post content:', typeof json.content);
-        let contentToParse = json.content || '{}'; // Default to empty object if content is null
-        if (typeof contentToParse !== 'string') {
-            contentToParse = JSON.stringify(contentToParse);
-        }
-        setContent(contentToParse);
-
-
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    fetchPost();
-  }, [id]);
-    const isEditorInitializedRef = useRef(false);
-
     useEffect(() => {
-    if (!editorElementRef.current || isEditorInitializedRef.current) return;
+      const fetchPost = async () => {
+        try {
+          if (!id) throw new Error('No post ID provided');
+          const res = await fetch(`http://localhost:5000/post/${id}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          });
+
+          if (!res.ok) throw new Error('Failed to fetch post');
+          const json = await res.json();
+
+          let contentToParse = json.content || '{}';
+          if (typeof contentToParse !== 'string') {
+            contentToParse = JSON.stringify(contentToParse);
+          }
+
+          setInitialContent(contentToParse);
+          hasFetchedContent.current = true;
+        } catch (error) {
+          console.error(error);
+        }
+      };
+
+      fetchPost();
+    }, [id]);
+
+    // 2. Initialize EditorJS after content is fetched
+  useEffect(() => {
+    if (!editorElementRef.current || isEditorInitializedRef.current || !initialContent) return;
 
     const editor = new EditorJS({
-        holder: editorElementRef.current,
-        tools: tools,
-        data: content ? JSON.parse(content) : undefined,
-        async onChange() {
+      holder: editorElementRef.current,
+      tools,
+      data: JSON.parse(initialContent),
+      async onChange() {
         if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
 
         debounceTimeoutRef.current = setTimeout(async () => {
-            const savedContent = await editor.save();
-            setContent(JSON.stringify(savedContent));
+          const saved = await editor.save();
+          editorContentRef.current = JSON.stringify(saved); // DO NOT trigger state update
         }, 500);
-        },
-        placeholder: "Let's write something awesome!",
+      },
+      placeholder: "Let's write something awesome!",
     });
 
     editorRef.current = editor;
     isEditorInitializedRef.current = true;
 
     return () => {
-        if (editorRef.current) {
-        try {
-            editorRef.current.destroy();
-        } catch (err) {
-            console.warn('Error destroying editor:', err);
-        }
-        editorRef.current = null;
-        isEditorInitializedRef.current = false;
-        }
+      try {
+        editor.destroy();
+      } catch (err) {
+        console.warn("Failed to destroy:", err);
+      }
+      editorRef.current = null;
+      isEditorInitializedRef.current = false;
     };
-    }, [id]);
+  }, [initialContent]);
 
     const handlePublish = async () => {
-        const parsedContent = content ? JSON.parse(content) : {};
+        const parsedContent = initialContent ? JSON.parse(initialContent) : {};
+        console.log('Publishing content:', parsedContent);
         const postData = {
         content: parsedContent,
         };  
-
         try {
         const res = await fetch(`http://localhost:5000/post/${id}/content`, {
-            method: 'PUT',
+            method: 'PUT',   
             headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -202,14 +203,14 @@ const Editor: React.FC = () => {
     <div className="editor-wrapper">
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200 p-4 flex justify-between items-center">
         <h1 className="text-xl font-medium text-gray-800">Editor</h1>
-        {content && (
+        
           <button
             className="text-sm px-4 py-1 bg-blue-600 text-white rounded"
-            onClick={() => handlePublish()}
+            onClick={handlePublish}
           >
             Save
           </button>
-        )}
+        
       </div>
       <div className="editor-container mx-auto max-w-4xl px-4 py-6">
         <div

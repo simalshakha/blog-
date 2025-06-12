@@ -25,7 +25,7 @@ router.get('/', async (req, res) => {
             current: page,
             nextpage: hasNextPage ? nextPage : null
         });
-        console.log("data", data);
+        // console.log("data", data);
 
     } catch (error) {
         console.log(error);

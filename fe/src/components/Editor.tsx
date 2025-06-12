@@ -59,7 +59,7 @@ const Editor: React.FC<EditorProps> = ({ initialContent, onChange }) => {
     },
     marker: {
       class: Marker,
-    },
+    },   
     table: {
       class: Table,
       inlineToolbar: true,

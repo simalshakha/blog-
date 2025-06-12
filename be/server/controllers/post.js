@@ -11,14 +11,14 @@ exports.getDashboard = async (req, res) => {
 
     // Fetch the user
     const user = await User.findById(userId);
-    console.log("Fetched user:", user);
+    // console.log("Fetched user:", user);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
     // Fetch all posts belonging to the user
     const posts = await Post.find({ user: userId }).populate("user", "username");
-    console.log("Fetched posts:", posts);
+    // console.log("Fetched posts:", posts);
     // Respond with posts and username
     res.json({
       data: posts,
