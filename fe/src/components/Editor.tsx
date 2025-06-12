@@ -28,92 +28,92 @@ interface EditorProps {
 const Editor: React.FC<EditorProps> = ({ initialContent, onChange }) => {
   const editorRef = useRef<EditorJS | null>(null);
   const editorElementRef = useRef<HTMLDivElement>(null);
-  const [isSaving, setIsSaving] = useState(false);
   const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    if (editorRef.current || !editorElementRef.current) return;
+  // Editor tools definition
+  const tools: EditorTools = {
+    header: {
+      class: Header,
+      config: {
+        levels: [1, 2, 3],
+        defaultLevel: 1,
+      },
+    },
+    list: {
+      class: List,
+      inlineToolbar: true,
+    },
+    checklist: {
+      class: Checklist,
+      inlineToolbar: true,
+    },
+    quote: {
+      class: Quote,
+      inlineToolbar: true,
+    },
+    code: {
+      class: Code,
+    },
+    inlineCode: {
+      class: InlineCode,
+    },
+    marker: {
+      class: Marker,
+    },
+    table: {
+      class: Table,
+      inlineToolbar: true,
+    },
+    linkTool: {
+      class: LinkTool,
+      config: {
+        endpoint: 'http://localhost:8008/fetchUrl', // Adjust this for your backend
+      },
+    },
+    image: {
+      class: ImageTool,
+      config: {
+        uploader: {
+          uploadByFile(file: File) {
+            const formData = new FormData();
+            formData.append('image', file);
 
-    const tools: EditorTools = {
-      header: {
-        class: Header,
-        config: {
-          levels: [1, 2, 3],
-          defaultLevel: 1,
-        },
-      },
-      list: {
-        class: List,
-        inlineToolbar: true,
-      },
-      checklist: {
-        class: Checklist,
-        inlineToolbar: true,
-      },
-      quote: {
-        class: Quote,
-        inlineToolbar: true,
-      },
-      code: {
-        class: Code,
-      },
-      inlineCode: {
-        class: InlineCode,
-      },
-      marker: {
-        class: Marker,
-      },
-      table: {
-        class: Table,
-        inlineToolbar: true,
-      },
-      linkTool: {
-        class: LinkTool,
-        config: {
-          endpoint: 'http://localhost:8008/fetchUrl', // Adjust this for your backend
-        },
-      },
-      image: {
-        class: ImageTool,
-        config: {
-          uploader: {
-            uploadByFile(file: File) {
-              const formData = new FormData();
-              formData.append('image', file);
+            return fetch('http://localhost:5000/upload-image', {
+              method: 'POST',
+              body: formData,
+            })
+              .then(async (res) => {
+                if (!res.ok) throw new Error('Upload failed');
+                const result = await res.json();
 
-              return fetch('http://localhost:5000/upload-image', {
-                method: 'POST',
-                body: formData,
+                const imageUrl = result.file?.url || result.url;
+                if (!imageUrl) throw new Error('Invalid response from server');
+
+                return {
+                  success: 1,
+                  file: {
+                    url: imageUrl,
+                  },
+                };
               })
-                .then(async (res) => {
-                  if (!res.ok) throw new Error('Upload failed');
-                  const result = await res.json();
-
-                  const imageUrl = result.file?.url || result.url; // fallback
-                  if (!imageUrl) throw new Error('Invalid response from server');
-
-                  return {
-                    success: 1,
-                    file: {
-                      url: imageUrl,
-                    },
-                  };
-                })
-                .catch((err) => {
-                  console.error('Image upload failed:', err); // ✅ Use console, not con
-                  return {
-                    success: 0,
-                  };
-                });
-            }
+              .catch((err) => {
+                console.error('Image upload failed:', err);
+                return {
+                  success: 0,
+                };
+              });
           },
         },
       },
-      
-      delimiter: {
-        class: Delimiter,
-      },
-    };
+    },
+    delimiter: {
+      class: Delimiter,
+    },
+  };
+
+  // Initialize EditorJS only once on mount
+  useEffect(() => {
+    if (editorRef.current || !editorElementRef.current) return;
 
     const editor = new EditorJS({
       holder: editorElementRef.current,
@@ -125,7 +125,7 @@ const Editor: React.FC<EditorProps> = ({ initialContent, onChange }) => {
         debounceTimeoutRef.current = setTimeout(async () => {
           const content: OutputData = await editor.save();
           onChange?.(JSON.stringify(content));
-        }, 500); // Debounce interval
+        }, 500); // Debounce time in ms
       },
       placeholder: "Let's write something awesome!",
     });
@@ -142,9 +142,18 @@ const Editor: React.FC<EditorProps> = ({ initialContent, onChange }) => {
         editorRef.current = null;
       }
     };
-  }, []); // Empty dependency: only initialize once
+  }, [initialContent, onChange]);
 
-
+  // Re-render editor content when initialContent changes
+  useEffect(() => {
+    if (editorRef.current && initialContent) {
+      try {
+        editorRef.current.render(JSON.parse(initialContent));
+      } catch (err) {
+        console.error('Failed to render editor content:', err);
+      }
+    }
+  }, [initialContent]);
 
   return (
     <div className="editor-wrapper">

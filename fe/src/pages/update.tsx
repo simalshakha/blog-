@@ -39,7 +39,12 @@ const EditorPage = () => {
          // Assuming content is stored as an object
         console.log("Editor content:", content);
         console.log('Fetched post content:', typeof json.content);
+        let contentToParse = json.content || '{}'; // Default to empty object if content is null
+        if (typeof contentToParse !== 'string') {
+          contentToParse = JSON.stringify(contentToParse);
+        }
 
+        const parsedContent = JSON.parse(contentToParse);
       } catch (err) {
         console.error(err);
         setError('Could not load post');
@@ -121,6 +126,7 @@ const EditorPage = () => {
       tags,
       content,
     };
+    console.log('Publishing post with data:', postData);
     try {
       const res = await fetch(`http://localhost:5000/edit-post/${id}`, {
         method: 'PUT',
@@ -141,8 +147,7 @@ const EditorPage = () => {
     }
   };
 
-
-  return (
+ return (
     <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
       <div 
         className={`fixed top-0 left-0 right-0 z-10 border-b bg-opacity-80 backdrop-blur-sm transition-colors duration-200 ${
@@ -292,16 +297,8 @@ const EditorPage = () => {
 
         <div className="flex">
           <div className={`flex-1 transition-all ${showPreview ? 'w-1/2' : 'w-full'}`}>
-            <Editor 
-              initialContent={content ? JSON.stringify(content) : ''}
-
-              onChange={(data) => {
-                try {
-                  setContent(JSON.parse(data));
-                } catch {
-                  setContent(null);
-                }
-              }}
+            <Editor
+              initialContent={typeof content === 'string' ? content : JSON.stringify(content)}
             />
           </div>
           {showPreview && (
@@ -312,21 +309,7 @@ const EditorPage = () => {
                 )}
                 <h1>{title || 'Untitled'}</h1>
                 {description && <p className="text-gray-600 dark:text-gray-400">{description}</p>}
-                {/* Render editor content preview */}
-                {content?.blocks?.map((block: any) => (
-                  <div key={block.id}>
-                    {block.type === 'paragraph' && <p>{block.data.text}</p>}
-                    {block.type === 'header' && <h2>{block.data.text}</h2>}
-                    {block.type === 'list' && (
-                      <ul>
-                        {block.data.items.map((item: any, idx: number) => (
-                          <li key={idx}>{item.content || item}</li>
-                        ))}
-                      </ul>
-                    )}
-                    {/* Add more block types as needed */}
-                  </div>
-                ))}
+                {/* Editor content preview will be rendered here */}
               </div>
             </div>
           )}
@@ -337,4 +320,3 @@ const EditorPage = () => {
 };
 
 export default EditorPage;
-
