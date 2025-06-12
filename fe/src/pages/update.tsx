@@ -1,11 +1,11 @@
-import React, { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useCallback, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Home, Share, Download, Sun, Moon, Eye, Upload, Tag, Send } from 'lucide-react';
 import Editor from '../components/Editor';
 
-const UpdatePostPage = () => {
-
+const EditorPage = () => {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [image, setimage] = useState<string | null>(null);
@@ -13,13 +13,14 @@ const UpdatePostPage = () => {
   const [description, setDescription] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [currentTag, setCurrentTag] = useState('');
-  const [content, setContent] = useState<any>(null); /
-
-
-  // Fetch post details by ID on component mount
+  const [content, setContent] = useState<any>(null); 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+// Store as object
   useEffect(() => {
     const fetchPost = async () => {
       try {
+        if (!id) throw new Error('No post ID provided');
         const res = await fetch(`http://localhost:5000/post/${id}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -29,8 +30,16 @@ const UpdatePostPage = () => {
         if (!res.ok) throw new Error('Failed to fetch post');
 
         const json = await res.json();
+
         setTitle(json.title);
-        setContent(json.content);
+        setDescription(json.description);
+        setimage(json.image);
+        setTags(json.tags || []);
+        setContent(json.content || null); // Assuming content is stored as an object
+         // Assuming content is stored as an object
+        console.log("Editor content:", content);
+        console.log('Fetched post content:', typeof json.content);
+
       } catch (err) {
         console.error(err);
         setError('Could not load post');
@@ -38,43 +47,80 @@ const UpdatePostPage = () => {
         setLoading(false);
       }
     };
-
     fetchPost();
-  }, [id]);
+  }, []);
 
-  // Basic text formatting function
-  const formatText = (command: string) => {
-    if (!textareaRef.current) return;
+  const handleimageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const formData = new FormData();
+      formData.append('image', file);
 
-    const textarea = textareaRef.current;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
+      try {
+        const res = await fetch('http://localhost:5000/upload-image', {
+          method: 'POST',
+          body: formData,
+        });
 
-    let selectedText = content.substring(start, end);
-    let before = content.substring(0, start);
-    let after = content.substring(end);
-
-    if (command === 'bold') {
-      selectedText = `**${selectedText}**`;
-    } else if (command === 'italic') {
-      selectedText = `*${selectedText}*`;
-    } else if (command === 'underline') {
-      selectedText = `__${selectedText}__`;
+        if (!res.ok) throw new Error('Failed to upload image');
+        const data = await res.json();
+        console.error('data received:', data);
+        const imageUrl = data.file?.url || data.url;
+        setimage(imageUrl); // Assuming your backend returns { imageUrl: '...' }
+      } catch (err) {
+        console.error('Upload error:', err);
+      }
     }
-
-    const newContent = before + selectedText + after;
-    setContent(newContent);
-
-    // Set cursor after inserted formatting
-    setTimeout(() => {
-      textarea.selectionStart = textarea.selectionEnd = start + selectedText.length;
-      textarea.focus();
-    }, 0);
   };
 
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
 
+  const handleDrop = useCallback(async (event: React.DragEvent) => {
+    event.preventDefault();
+    const file = event.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        const res = await fetch('http://localhost:5000/upload-image', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!res.ok) throw new Error('Failed to upload image');
+
+        const data = await res.json();
+        setimage(data.imageUrl);
+      } catch (error) {
+        console.error('Upload error:', error);
+      }
+    }
+  }, []);
+
+
+  const handleDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+  }, []);
+
+  const handleAddTag = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && currentTag.trim() && !tags.includes(currentTag.trim())) {
+      setTags([...tags, currentTag.trim()]);
+      setCurrentTag('');
+    }
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    setTags(tags.filter(tag => tag !== tagToRemove));
+  };
+
+  const handlePublish = async () => {
+    const postData = {
+      title,
+      description,
+      image,
+      tags,
+      content,
+    };
     try {
       const res = await fetch(`http://localhost:5000/edit-post/${id}`, {
         method: 'PUT',
@@ -82,87 +128,213 @@ const UpdatePostPage = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify({ title, content }),
+        body: JSON.stringify(postData),
       });
-
-      if (!res.ok) throw new Error('Failed to update post');
+      if (!res.ok) {
+        throw new Error('Failed to publish post');
+      }
 
       navigate('/dashboard');
-    } catch (err) {
-      console.error(err);
-      setError('Failed to update post');
+    } catch (error) {
+      console.error(error);
+      alert('Failed to publish post');
     }
   };
 
-  if (loading) return <p>Loading post...</p>;
-  if (error) return <p className="text-red-600">{error}</p>;
 
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h1 className="text-3xl font-bold mb-6 text-center">Update Post</h1>
-      <form onSubmit={handleUpdate} className="space-y-6">
-        <div>
-          <label className="block mb-2 font-semibold text-gray-700">Title</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-md text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
+    <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
+      <div 
+        className={`fixed top-0 left-0 right-0 z-10 border-b bg-opacity-80 backdrop-blur-sm transition-colors duration-200 ${
+          isDarkMode ? 'bg-gray-800/80 border-gray-700' : 'bg-white/80 border-gray-200'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between h-14">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => navigate('/')}
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <Home className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setShowPreview(!showPreview)}
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <Eye className="w-5 h-5" />
+              </button>
+              <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                <Share className="w-5 h-5" />
+              </button>
+              <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                <Download className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setIsDarkMode(!isDarkMode)}
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              </button>
+              <button
+                onClick={handlePublish}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+              >
+                <Send className="w-4 h-4" />
+                Publish
+              </button>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <div>
-          <label className="block mb-2 font-semibold text-gray-700">Content</label>
-
-          {/* Toolbar */}
-          <div className="mb-2 space-x-2">
-            <button
-              type="button"
-              onClick={() => formatText('bold')}
-              className="px-3 py-1 font-bold border border-gray-400 rounded hover:bg-gray-100"
-              title="Bold"
-            >
-              <b>B</b>
-            </button>
-            <button
-              type="button"
-              onClick={() => formatText('italic')}
-              className="px-3 py-1 italic border border-gray-400 rounded hover:bg-gray-100"
-              title="Italic"
-            >
-              I
-            </button>
-            <button
-              type="button"
-              onClick={() => formatText('underline')}
-              className="px-3 py-1 underline border border-gray-400 rounded hover:bg-gray-100"
-              title="Underline"
-            >
-              U
-            </button>
+      <div className="pt-14">
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <div 
+            className={`mb-8 rounded-lg border-2 border-dashed ${
+              isDarkMode ? 'border-gray-700' : 'border-gray-200'
+            } p-4 text-center`}
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+          >
+            {image ? (
+              <div className="relative">
+                <img 
+                  src={image} 
+                  alt="image" 
+                  className="w-full h-48 object-cover rounded-lg"
+                />
+                <button
+                  onClick={() => setimage(null)}
+                  className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                >
+                  ×
+                </button>
+              </div>
+            ) : (
+              <div className="py-12">
+                <Upload className="w-8 h-8 mx-auto mb-4 text-gray-400" />
+                <label className="cursor-pointer">
+                  <span className="text-blue-600 hover:text-blue-700">Upload a image</span>
+                  <span className="text-gray-500"> or drag and drop</span>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleimageUpload}
+                  />
+                </label>
+              </div>
+            )}
           </div>
 
-          <textarea
-            ref={textareaRef}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            rows={12}
-            className="w-full p-4 border border-gray-300 rounded-md font-serif text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-vertical"
-            placeholder="Write your content here... (Markdown supported)"
-            required
+          <input
+            type="text"
+            placeholder="Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className={`w-full text-3xl font-bold mb-4 bg-transparent border-none outline-none ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}
           />
+
+          <div className="mb-6">
+            <textarea
+              placeholder="Short description (max 200 characters)"
+              value={description}
+              onChange={(e) => setDescription(e.target.value.slice(0, 200))}
+              className={`w-full p-2 rounded-lg border ${
+                isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+              }`}
+              rows={3}
+            />
+            <div className="text-sm text-gray-500 text-right">
+              {description.length}/200
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <div className="flex flex-wrap gap-2 mb-2">
+              {tags.map(tag => (
+                <span
+                  key={tag}
+                  className={`px-3 py-1 rounded-full text-sm flex items-center gap-2 ${
+                    isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
+                  }`}
+                >
+                  {tag}
+                  <button
+                    onClick={() => removeTag(tag)}
+                    className="hover:text-red-500"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex items-center gap-2">
+              <Tag className="w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Add tags..."
+                value={currentTag}
+                onChange={(e) => setCurrentTag(e.target.value)}
+                onKeyDown={handleAddTag}
+                className={`flex-1 bg-transparent border-none outline-none ${
+                  isDarkMode ? 'text-white' : 'text-gray-900'
+                }`}
+              />
+            </div>
+          </div>
         </div>
 
-        <button
-          type="submit"
-          className="w-full py-3 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700 transition"
-        >
-          Update Post
-        </button>
-      </form>
+        <div className="flex">
+          <div className={`flex-1 transition-all ${showPreview ? 'w-1/2' : 'w-full'}`}>
+            <Editor 
+              initialContent={content ? JSON.stringify(content) : ''}
+
+              onChange={(data) => {
+                try {
+                  setContent(JSON.parse(data));
+                } catch {
+                  setContent(null);
+                }
+              }}
+            />
+          </div>
+          {showPreview && (
+            <div className="w-1/2 border-l p-8 overflow-auto h-[calc(100vh-3.5rem)]">
+              <div className="prose dark:prose-invert max-w-none">
+                {image && (
+                  <img src={image} alt="image" className="w-full h-48 object-cover rounded-lg mb-8" />
+                )}
+                <h1>{title || 'Untitled'}</h1>
+                {description && <p className="text-gray-600 dark:text-gray-400">{description}</p>}
+                {/* Render editor content preview */}
+                {content?.blocks?.map((block: any) => (
+                  <div key={block.id}>
+                    {block.type === 'paragraph' && <p>{block.data.text}</p>}
+                    {block.type === 'header' && <h2>{block.data.text}</h2>}
+                    {block.type === 'list' && (
+                      <ul>
+                        {block.data.items.map((item: any, idx: number) => (
+                          <li key={idx}>{item.content || item}</li>
+                        ))}
+                      </ul>
+                    )}
+                    {/* Add more block types as needed */}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
 
-export default UpdatePostPage;
+export default EditorPage;
+

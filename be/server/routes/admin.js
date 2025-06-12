@@ -18,7 +18,7 @@ router.get('/dashboard', auth, postController.getDashboard);
 // Posts
 router.get('/add-post', auth, postController.renderAddPost);
 router.get('/edit-post/:id', auth, postController.renderEditPost);
-router.post('/edit-post/:id', auth, postController.updatePost);
+router.put('/edit-post/:id', auth, postController.updatePost);
 router.delete('/delete-post/:id', auth, postController.deletePost);
 
 
