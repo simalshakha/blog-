@@ -7,16 +7,35 @@ const upload = require('../middleware/multer.js');
 
 router.get('/', async (req, res) => {
     try {
-        const locals = {
-            title: "Blogs",
-            description: "can post blogs"
-        };
         let perPage = 10;
         let page = parseInt(req.query.page) || 1;
-        const data = await Post.aggregate([{ $sort: { createdAt: -1 } }])
-            .skip(perPage * (page - 1))
-            .limit(perPage) 
-            .exec();
+        const data = await Post.aggregate([
+          { $sort: { createdAt: -1 } },
+          {
+            $lookup: {
+              from: 'users', // this is the collection name, not model name
+              localField: 'user', // in Post schema
+              foreignField: '_id', // in User schema
+              as: 'userInfo'
+            }
+          },
+          { $unwind: '$userInfo' }, // turn userInfo array into a single object
+          {
+            $project: {
+              title: 1,
+              description: 1,
+              image: 1,
+              tags: 1,
+              content: 1,
+              createdAt: 1,
+              updatedAt: 1,
+              fullName: '$userInfo.fullName'
+            }
+          }
+        ])
+        .skip(perPage * (page - 1))
+        .limit(perPage)
+        .exec();
         const count = await Post.countDocuments(); 
         const nextPage = page + 1;
         const hasNextPage = nextPage <= Math.ceil(count / perPage); 
@@ -25,7 +44,7 @@ router.get('/', async (req, res) => {
             current: page,
             nextpage: hasNextPage ? nextPage : null
         });
-        // console.log("data", data);
+        console.log("data", data);
 
     } catch (error) {
         console.log(error);
