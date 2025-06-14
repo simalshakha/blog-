@@ -36,7 +36,7 @@ const Editor: React.FC<EditorProps> = ({ initialContent, onChange }) => {
       class: Header,
       config: {
         levels: [1, 2, 3],
-        defaultLevel: 1,
+        defaultLevel: 3,
       },
     },
     list: {
@@ -157,9 +157,6 @@ const Editor: React.FC<EditorProps> = ({ initialContent, onChange }) => {
 
   return (
     <div className="editor-wrapper">
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 p-4 flex justify-between items-center">
-        <h1 className="text-xl font-medium text-gray-800">Editor</h1>
-      </div>
       <div className="editor-container mx-auto max-w-4xl px-4 py-6">
         <div
           ref={editorElementRef}

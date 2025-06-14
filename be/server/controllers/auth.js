@@ -7,7 +7,6 @@ const jwtSecret = process.env.JWT_SECRET;
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
@@ -15,6 +14,8 @@ exports.login = async (req, res) => {
 
     // If you're using bcrypt, compare passwords here:
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log("User found:", user._id);
+    console.log("Password match:", user.password, password, isMatch);
     if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
 
     const token = jwt.sign(
@@ -24,7 +25,7 @@ exports.login = async (req, res) => {
     );
 
     res.cookie('token', token, { httpOnly: true });
-
+    console.log("User logged in:", user._id);
     // ✅ Always send response
     return res.status(200).json({
       message: 'Login successful',
