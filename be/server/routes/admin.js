@@ -5,7 +5,31 @@ const authController = require('../controllers/auth');
 const postController = require('../controllers/post');
 const adminController = require('../controllers/admincontroller');
 const Post = require('../models/post');
-// const topicController = require('../controllers/topiccontroller');
+const checkRole = require('../middleware/rbauth');       // our RBAC middleware
+
+// GET /users (admin-only)
+router.get(
+  '/users',
+  auth,            // must come before role check
+  checkRole('admin'),        // only allow admins
+  (req, res) => {
+    User.find({}, (err, users) => {
+      if (err) {
+        return res.status(500).json({ message: 'Error fetching users' });
+      }
+      res.status(200).json({ users });
+    });
+  }
+);
+router.delete('/users/:id', auth,checkRole('admin'), (req, res) => {
+  const { id } = req.params;
+  User.findByIdAndDelete(id, (err) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error deleting user' });
+    }
+    res.status(204).send();
+  });
+});
 
 // Auth
 router.post('/login', authController.login);

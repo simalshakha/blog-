@@ -8,10 +8,12 @@ import LoginPage from './pages/login';
 import SignUpPage from './pages/signup';
 import UpdatePostPage from './pages/update';
 import ContentEditPage from './pages/contentedit';
+import Admin from './pages/admin';
 function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/admin" element={<Admin />} />
         <Route path="/" element={<HomePage />} />
         <Route path="/editor" element={<EditorPage />} />
         <Route path="/update/:id" element={<UpdatePostPage />} />

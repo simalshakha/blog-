@@ -50,9 +50,18 @@ const HomePage = () => {
           <Pen className="w-6 h-6 text-white" />
           <span className="font-semibold text-xl text-white">.blog</span>
         </div>
+        <button
+        onClick={() => navigate('/signup')}
+        className="inline-flex items-center px-8 py-4 rounded-xl text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 backdrop-blur-sm"
+      >
+        Start Writing
+        <Pen className="w-5 h-5 ml-2" />
+      </button>
 
         <button
-          onClick={() => navigate('/login')}
+          onClick={() => {
+                return navigate('/login');
+              }}
           className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-white hover:text-black hover:bg-white transition-all"
         >
           <LogIn className="w-4 h-4 mr-2" />
@@ -80,10 +89,11 @@ const HomePage = () => {
             className="group cursor-pointer"
             onClick={() => navigate(`/post/${post._id}`)}
           >
+            <hr className="border-t border-gray-800 mx-auto" />
             <div className="flex items-start gap-8">
               <div className="flex-1">
                 <div className="mb-2">
-                  <span className="text-sm text-gray-400 font-medium">
+                  <span className="text-sm text-gray-400 font-medium underline decoration-green-400 underline-offset-4">
                     {post.tags.join(', ')}
                   </span>
                 </div>
@@ -101,11 +111,6 @@ const HomePage = () => {
                   {post.title}
                 </h2>
                 <p className="text-gray-300 mb-4 line-clamp-3">{post.description}</p>
-
-                <div className="flex items-center gap-1 text-gray-400">
-                  <Heart className="w-4 h-4" />
-                  <span className="text-sm">0</span>
-                </div>
               </div>
 
               <div className="w-48 h-32 overflow-hidden rounded-lg bg-gray-800">
@@ -130,13 +135,7 @@ const HomePage = () => {
     )}
 
     <div className="mt-16 text-center">
-      <button
-        onClick={() => navigate('/signup')}
-        className="inline-flex items-center px-8 py-4 rounded-xl text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 backdrop-blur-sm"
-      >
-        Start Writing
-        <Pen className="w-5 h-5 ml-2" />
-      </button>
+      
     </div>
   </main>
 </div>
