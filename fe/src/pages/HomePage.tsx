@@ -15,6 +15,7 @@ const HomePage = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -39,6 +40,8 @@ const HomePage = () => {
     };
 
     fetchPosts();
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token);
   }, []);
 
   return (
@@ -50,23 +53,36 @@ const HomePage = () => {
           <Pen className="w-6 h-6 text-white" />
           <span className="font-semibold text-xl text-white">.blog</span>
         </div>
-        <button
-        onClick={() => navigate('/signup')}
-        className="inline-flex items-center px-8 py-4 rounded-xl text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 backdrop-blur-sm"
-      >
-        Start Writing
-        <Pen className="w-5 h-5 ml-2" />
-      </button>
+        {isLoggedIn && (
+  <button
+    onClick={() => navigate('/editor')}
+    className="inline-flex items-center px-8 py-4 rounded-xl text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 backdrop-blur-sm"
+  >
+    Start Writing
+    <Pen className="w-5 h-5 ml-2" />
+  </button>
+)}
 
-        <button
-          onClick={() => {
-                return navigate('/login');
-              }}
-          className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-white hover:text-black hover:bg-white transition-all"
-        >
-          <LogIn className="w-4 h-4 mr-2" />
-          Sign In
-        </button>
+{!isLoggedIn && (
+  <>
+    <button
+      onClick={() => navigate('/signup')}
+      className="inline-flex items-center px-8 py-4 rounded-xl text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 backdrop-blur-sm"
+    >
+      Start Writing
+      <Pen className="w-5 h-5 ml-2" />
+    </button>
+
+    <button
+      onClick={() => navigate('/login')}
+      className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-white hover:text-black hover:bg-white transition-all"
+    >
+      <LogIn className="w-4 h-4 mr-2" />
+      Sign In
+    </button>
+  </>
+)}
+
       </div>
     </div>
   </nav>

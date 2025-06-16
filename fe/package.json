@@ -22,6 +22,7 @@
     "@editorjs/marker": "^1.4.0",
     "@editorjs/quote": "^2.7.6",
     "@editorjs/table": "^2.4.5",
+    "@tailwindcss/typography": "^0.5.16",
     "@tiptap/core": "^2.2.4",
     "@tiptap/extension-blockquote": "^2.2.4",
     "@tiptap/extension-bullet-list": "^2.2.4",
