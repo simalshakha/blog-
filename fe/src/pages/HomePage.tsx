@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, Clock, User, ArrowRight, Sparkles, Pen, LogIn } from 'lucide-react';
+import Navbar from '../components/nav';
 
 interface BlogPost {
   _id: string;
@@ -38,12 +39,31 @@ const HomePage = () => {
     fetchPosts();
     setIsLoggedIn(!!localStorage.getItem('token'));
   }, []);
+  const handleLogout = async () => {
+    try {
+      const res = await fetch('http://localhost:5000/logout', {
+        method: 'POST',
+        credentials: 'include', // sends cookies
+      });
+
+      if (res.ok) {
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
+        // navigate('/login');
+      } else {
+        console.error('Logout failed:', await res.text());
+      }
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+  };
 
   const featuredPost = posts[0];
   const regularPosts = posts.slice(1);
 
   return (
     <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white">
+      <Navbar isLoggedIn={isLoggedIn} onLogout={handleLogout} />
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 pt-24 pb-16">
         <div className="max-w-7xl mx-auto text-center px-4 sm:px-6 lg:px-8">

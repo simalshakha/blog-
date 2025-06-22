@@ -34,7 +34,7 @@ router.delete('/users/:id', auth,checkRole('admin'), (req, res) => {
 // Auth
 router.post('/login', authController.login);
 router.post('/register', authController.register);
-router.get('/logout', authController.logout);
+router.post('/logout', authController.logout);
 
 // Admin
 // router.get('/login', adminController.getAdminPage);
