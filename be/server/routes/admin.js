@@ -36,8 +36,7 @@ router.post('/login', authController.login);
 router.post('/register', authController.register);
 router.post('/logout', authController.logout);
 
-// Admin
-// router.get('/login', adminController.getAdminPage);
+
 router.get('/dashboard', auth, postController.getDashboard);
 
 // Posts
