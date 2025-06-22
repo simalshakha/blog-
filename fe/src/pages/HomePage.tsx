@@ -1,16 +1,18 @@
-import React, { ReactNode, useEffect, useState } from 'react';
+// HomePage.tsx
+
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Pen, LogIn, Heart } from 'lucide-react';
+import { Heart, Clock, User, ArrowRight, Sparkles, Pen, LogIn } from 'lucide-react';
 
 interface BlogPost {
-  fullName: string;
   _id: string;
+  fullName: string;
   title: string;
   description: string;
   image: string | null;
   tags: string[];
 }
-const avatarUrl = 'https://images.vexels.com/media/users/3/134485/isolated/preview/bcde859a8ad3a45cb93aed78d8a63686-cool-emoji-emoticon.png?w=360';
+
 const HomePage = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -23,14 +25,9 @@ const HomePage = () => {
         const res = await fetch('http://localhost:5000/', {
           credentials: 'include',
         });
-
         const json = await res.json();
-        console.log('Fetched data:', json);
-
         if (Array.isArray(json.data)) {
           setPosts(json.data);
-        } else {
-          console.error('Unexpected data format:', json);
         }
       } catch (error) {
         console.error('Error fetching posts:', error);
@@ -38,124 +35,141 @@ const HomePage = () => {
         setLoading(false);
       }
     };
-
     fetchPosts();
-    const token = localStorage.getItem('token');
-    setIsLoggedIn(!!token);
+    setIsLoggedIn(!!localStorage.getItem('token'));
   }, []);
 
+  const featuredPost = posts[0];
+  const regularPosts = posts.slice(1);
+
   return (
-<div className="min-h-screen bg-black text-white">
-  <nav className="fixed top-0 left-0 right-0 bg-black border-b border-gray-800 z-50">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="flex justify-between h-16 items-center">
-        <div className="flex items-center space-x-2">
-          <Pen className="w-6 h-6 text-white" />
-          <span className="font-semibold text-xl text-white">.blog</span>
+    <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white">
+      {/* Hero Section */}
+      <section className="relative bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 pt-24 pb-16">
+        <div className="max-w-7xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+          <div className="inline-flex items-center bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-4 py-2 rounded-full text-sm mb-6">
+            <Sparkles className="w-4 h-4 mr-2" />
+            Welcome to the future of writing
+          </div>
+          <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-gray-900 via-blue-900 to-purple-900 dark:from-white dark:via-blue-100 dark:to-purple-100 bg-clip-text text-transparent leading-tight mb-6">
+            Where Stories<br />Come to Life
+          </h1>
+          <p className="text-lg md:text-2xl text-gray-600 dark:text-gray-300 mb-10">
+            Discover thoughtful writing, share your voice, and connect with a community of passionate storytellers.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <button
+              onClick={() => navigate(isLoggedIn ? '/editor' : '/signup')}
+              className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl font-semibold text-lg shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all flex items-center"
+            >
+              <span>Start Writing</span>
+              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+            </button>
+            <button
+              onClick={() => navigate(isLoggedIn ? '/dashboard' : '/login')}
+              className="px-8 py-4 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-2xl font-semibold text-lg hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
+            >
+              {isLoggedIn ? 'Explore Stories' : (
+                <div className="flex items-center">
+                  <LogIn className="w-4 h-4 mr-2" /> Sign In
+                </div>
+              )}
+            </button>
+          </div>
         </div>
-        {isLoggedIn && (
-  <button
-    onClick={() => navigate('/editor')}
-    className="inline-flex items-center px-8 py-4 rounded-xl text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 backdrop-blur-sm"
-  >
-    Start Writing
-    <Pen className="w-5 h-5 ml-2" />
-  </button>
-)}
+      </section>
 
-{!isLoggedIn && (
-  <>
-    <button
-      onClick={() => navigate('/signup')}
-      className="inline-flex items-center px-8 py-4 rounded-xl text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 backdrop-blur-sm"
-    >
-      Start Writing
-      <Pen className="w-5 h-5 ml-2" />
-    </button>
-
-    <button
-      onClick={() => navigate('/login')}
-      className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-white hover:text-black hover:bg-white transition-all"
-    >
-      <LogIn className="w-4 h-4 mr-2" />
-      Sign In
-    </button>
-  </>
-)}
-
-      </div>
-    </div>
-  </nav>
-
-  <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
-    <div className="mb-12">
-      <h1 className="text-4xl font-bold text-white mb-4">Latest Stories</h1>
-      <p className="text-lg text-gray-300">
-        Discover thoughtful writing on travel, food, and personal experiences.
-      </p>
-    </div>
-
-    {loading ? (
-      <p className="text-center text-gray-400">Loading posts...</p>
-    ) : posts.length > 0 ? (
-      <div className="space-y-12">
-        {posts.map((post) => (
-          <article
-            key={post._id}
-            className="group cursor-pointer"
-            onClick={() => navigate(`/post/${post._id}`)}
+      {/* Featured Story */}
+      {featuredPost && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <h2 className="text-3xl font-bold mb-2">Featured Story</h2>
+          <p className="text-gray-500 mb-6">Hand-picked by our editorial team</p>
+          <div
+            className="group cursor-pointer bg-white dark:bg-gray-800 rounded-3xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-2 overflow-hidden"
+            onClick={() => navigate(`/post/${featuredPost._id}`)}
           >
-            <hr className="border-t border-gray-800 mx-auto" />
-            <div className="flex items-start gap-8">
-              <div className="flex-1">
-                <div className="mb-2">
-                  <span className="text-sm text-gray-400 font-medium underline decoration-green-400 underline-offset-4">
-                    {post.tags.join(', ')}
+            <div className="md:flex">
+              {featuredPost.image && (
+                <div className="md:w-1/2 h-64 md:h-auto overflow-hidden">
+                  <img src={featuredPost.image} alt={featuredPost.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                </div>
+              )}
+              <div className="md:w-1/2 p-6 md:p-12">
+                <div className="mb-4">
+                  <span className="px-3 py-1 text-sm bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full">
+                    {featuredPost.tags.join(', ') || 'General'}
                   </span>
                 </div>
-
-                <div className="flex items-center gap-2 mb-2">
-                  <span
-                    className="w-6 h-6 rounded-full bg-cover bg-center"
-                    style={{ backgroundImage: `url('${avatarUrl}')` }}
-                  />
-
-                  <span className="text-sm text-blue-400">{post.fullName}</span>
+                <h3 className="text-2xl font-bold group-hover:text-blue-600 dark:group-hover:text-blue-400 mb-4">
+                  {featuredPost.title}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  {featuredPost.description}
+                </p>
+                <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+                  <User className="w-4 h-4" />
+                  <span>{featuredPost.fullName}</span>
                 </div>
-
-                <h2 className="text-xl font-semibold text-white mb-2 group-hover:text-blue-400 transition-colors">
-                  {post.title}
-                </h2>
-                <p className="text-gray-300 mb-4 line-clamp-3">{post.description}</p>
-              </div>
-
-              <div className="w-48 h-32 overflow-hidden rounded-lg bg-gray-800">
-                {post.image ? (
-                  <img
-                    src={post.image}
-                    alt={post.title}
-                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-500 text-sm">
-                    No Image
-                  </div>
-                )}
               </div>
             </div>
-          </article>
-        ))}
-      </div>
-    ) : (
-      <p className="text-center text-gray-400">No posts found.</p>
-    )}
+          </div>
+        </section>
+      )}
 
-    <div className="mt-16 text-center">
-      
+      {/* Latest Stories */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <h2 className="text-3xl font-bold mb-6">Latest Stories</h2>
+        {loading ? (
+          <p className="text-gray-400">Loading...</p>
+        ) : posts.length > 1 ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {regularPosts.map(post => (
+              <article
+                key={post._id}
+                className="group cursor-pointer bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition overflow-hidden"
+                onClick={() => navigate(`/post/${post._id}`)}
+              >
+                {post.image ? (
+                  <img src={post.image} alt={post.title} className="h-48 w-full object-cover group-hover:scale-105 transition-transform" />
+                ) : (
+                  <div className="h-48 flex items-center justify-center text-gray-400">No Image</div>
+                )}
+                <div className="p-6">
+                  <span className="text-sm text-gray-400">{post.tags.join(', ')}</span>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 mt-2 line-clamp-2">{post.title}</h3>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mt-2 line-clamp-3">{post.description}</p>
+                  <div className="flex items-center mt-4 text-sm text-gray-500 dark:text-gray-400 space-x-2">
+                    <User className="w-4 h-4" />
+                    <span>{post.fullName}</span>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-400">No posts available.</p>
+        )}
+      </section>
+
+      {/* CTA */}
+      <section className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 py-20">
+        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+          <h2 className="text-4xl font-bold text-white mb-6">
+            Ready to Share Your Story?
+          </h2>
+          <p className="text-xl text-blue-100 mb-8">
+            Join thousands of writers who trust this platform to bring their ideas to life.
+          </p>
+          <button
+            onClick={() => navigate('/editor')}
+            className="px-8 py-4 bg-white text-gray-900 rounded-2xl font-semibold text-lg shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all"
+          >
+            Start Writing Today
+          </button>
+        </div>
+      </section>
     </div>
-  </main>
-</div>
   );
-}
+};
 
 export default HomePage;
