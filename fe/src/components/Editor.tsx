@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import EditorJS, { OutputData } from '@editorjs/editorjs';
 import Header from '@editorjs/header';
 import List from '@editorjs/list';
@@ -30,7 +30,6 @@ const Editor: React.FC<EditorProps> = ({ initialContent, onChange }) => {
   const editorElementRef = useRef<HTMLDivElement>(null);
   const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Editor tools definition
   const tools: EditorTools = {
     header: {
       class: Header,
@@ -38,6 +37,7 @@ const Editor: React.FC<EditorProps> = ({ initialContent, onChange }) => {
         levels: [1, 2, 3],
         defaultLevel: 3,
       },
+      inlineToolbar: true,
     },
     list: {
       class: List,
@@ -59,7 +59,7 @@ const Editor: React.FC<EditorProps> = ({ initialContent, onChange }) => {
     },
     marker: {
       class: Marker,
-    },   
+    },
     table: {
       class: Table,
       inlineToolbar: true,
@@ -67,7 +67,7 @@ const Editor: React.FC<EditorProps> = ({ initialContent, onChange }) => {
     linkTool: {
       class: LinkTool,
       config: {
-        endpoint: 'http://localhost:8008/fetchUrl', // Adjust this for your backend
+        endpoint: 'http://localhost:8008/fetchUrl',
       },
     },
     image: {
@@ -85,22 +85,17 @@ const Editor: React.FC<EditorProps> = ({ initialContent, onChange }) => {
               .then(async (res) => {
                 if (!res.ok) throw new Error('Upload failed');
                 const result = await res.json();
-
                 const imageUrl = result.file?.url || result.url;
                 if (!imageUrl) throw new Error('Invalid response from server');
 
                 return {
                   success: 1,
-                  file: {
-                    url: imageUrl,
-                  },
+                  file: { url: imageUrl },
                 };
               })
               .catch((err) => {
                 console.error('Image upload failed:', err);
-                return {
-                  success: 0,
-                };
+                return { success: 0 };
               });
           },
         },
@@ -111,7 +106,6 @@ const Editor: React.FC<EditorProps> = ({ initialContent, onChange }) => {
     },
   };
 
-  // Initialize EditorJS only once on mount
   useEffect(() => {
     if (editorRef.current || !editorElementRef.current) return;
 
@@ -121,11 +115,10 @@ const Editor: React.FC<EditorProps> = ({ initialContent, onChange }) => {
       data: initialContent ? JSON.parse(initialContent) : undefined,
       async onChange() {
         if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
-
         debounceTimeoutRef.current = setTimeout(async () => {
           const content: OutputData = await editor.save();
           onChange?.(JSON.stringify(content));
-        }, 500); // Debounce time in ms
+        }, 500);
       },
       placeholder: "Let's write something awesome!",
     });
@@ -144,7 +137,6 @@ const Editor: React.FC<EditorProps> = ({ initialContent, onChange }) => {
     };
   }, []);
 
-  // Re-render editor content when initialContent changes
   useEffect(() => {
     if (editorRef.current && initialContent) {
       try {
@@ -160,9 +152,37 @@ const Editor: React.FC<EditorProps> = ({ initialContent, onChange }) => {
       <div className="editor-container mx-auto max-w-4xl px-4 py-6">
         <div
           ref={editorElementRef}
-          className="prose max-w-none min-h-[300px] border border-gray-200 p-4 rounded"
+          className="min-h-[300px] border border-gray-200 p-4 rounded"
         />
       </div>
+
+      {/* Custom header styles for Editor.js live view */}
+    <style>
+  {`
+    .ce-header {
+      font-weight: bold !important;
+      color: #111 !important;
+      margin: 0.5em 0 !important;
+    }
+    
+
+    .ce-header[data-level="1"] {
+      font-size: 2.25rem !important;
+    }
+    .ce-header[data-level="2"] {
+      font-size: 1.875rem !important;
+    }
+    .ce-header[data-level="3"] {
+      font-size: 1.5rem !important;
+    }
+
+    /* Dark mode support */
+    .dark .ce-header {
+      color: #fff !important;
+    }
+  `}
+</style>
+
     </div>
   );
 };

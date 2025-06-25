@@ -1,17 +1,15 @@
-import React, { JSX, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { ArrowLeft, Heart, Bookmark, Eye } from 'lucide-react';
+import PostHeader from '../components/blog/PostHeader';
+import PostContent from '../components/blog/PostContent';
+import AuthorCard from '../components/blog/AuthorCard';
+import CommentSection from '../components/blog/CommentSection';
 
 interface Block {
   type: string;
-  data: {
-    text?: string;
-    level?: number;
-    style?: string;
-    items?: any[];
-    caption?: string;
-    file?: { url: string };
-    [key: string]: any;
-  };
+  data: any;
 }
 
 interface Post {
@@ -24,121 +22,170 @@ interface Post {
     blocks: Block[];
   };
   createdAt: string;
+  author: any;
+  readTime: string;
+  views: number;
+  likes: number;
+  isLiked: boolean;
+  isBookmarked: boolean;
 }
 
-function renderBlock(block: Block): React.ReactNode {
-  switch (block.type) {
-    case 'paragraph':
-      return <p>{block.data.text}</p>;
-    case 'header':
-      const HeaderTag = `h${block.data.level || 2}` as keyof JSX.IntrinsicElements;
-      return React.createElement(HeaderTag, null, block.data.text);
-    case 'list':
-      // Render ordered or unordered list
-      const items = block.data.items || [];
-      if (block.data.style === 'ordered') {
-        return (
-          <ol>
-            {items.map((item, idx) => (
-              <li key={idx}>
-                {typeof item === 'string'
-                  ? item
-                  : item?.content || item?.text || ''}
-              </li>
-            ))}
-          </ol>
-        );
-      } else {
-        return (
-          <ul>
-            {items.map((item, idx) => (
-              <li key={idx}>
-                {typeof item === 'string'
-                  ? item
-                  : item?.content || item?.text || ''}
-              </li>
-            ))}
-          </ul>
-        );
-      }
-    case 'image':
-      return (
-        <img
-          src={block.data.file?.url}
-          alt={block.data.caption || ''}
-          className="my-4 rounded-lg"
-        />
-      );
-    case 'quote':
-      return (
-        <blockquote>
-          <p>{block.data.text}</p>
-          {block.data.caption && <cite>{block.data.caption}</cite>}
-        </blockquote>
-      );
-    default:
-      return null;
-  }
-}
-
-const BlogPost = () => {
+const PostPage = () => {
   const { id } = useParams<{ id: string }>();
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/post/${id}`);
-        if (!response.ok) throw new Error('Post not found');
-        const data = await response.json();
-        setPost(data);
-      } catch (err) {
-        setError((err as Error).message);
+        const res = await fetch(`http://localhost:5000/post/${id}`);
+        const data = await res.json();
+        setPost({
+          ...data,
+          readTime: '7 min read',
+          views: 1200,
+          likes: 50,
+          isLiked: false,
+          isBookmarked: false,
+        });
+      } catch (e) {
+        console.error('Error loading post:', e);
       } finally {
         setLoading(false);
       }
     };
-
     fetchPost();
   }, [id]);
 
-  if (loading) return <div className="text-center mt-12">Loading...</div>;
-  if (error || !post) return <div className="text-center mt-12 text-red-500">Error: {error}</div>;
+  const handleLike = () => {
+    if (post) {
+      setPost({
+        ...post,
+        isLiked: !post.isLiked,
+        likes: post.isLiked ? post.likes - 1 : post.likes + 1,
+      });
+    }
+  };
+
+  const handleBookmark = () => {
+    if (post) {
+      setPost({
+        ...post,
+        isBookmarked: !post.isBookmarked,
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full"
+        />
+      </div>
+    );
+  }
+
+  if (!post) {
+    return <div className="text-center text-red-500">Post not found</div>;
+  }
 
   return (
-    <div className="min-h-screen bg-white">
-      <article className="max-w-3xl mx-auto px-4 py-12">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">{post.title}</h1>
-        <p className="text-gray-500 mb-6">{new Date(post.createdAt).toLocaleDateString()}</p>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="sticky top-16 z-40 bg-white dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <motion.button
+            className="flex items-center space-x-2 text-gray-600 dark:text-gray-400"
+            whileHover={{ x: -2 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => window.history.back()}
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span>Back</span>
+          </motion.button>
+        </div>
+      </div>
 
-        {post.image && (
-          <img
-            src={post.image}
-            alt="Post image"
-            className="w-full h-[400px] object-cover rounded-lg mb-8"
-          />
-        )}
-        <div className="prose prose-lg max-w-none mb-8">
-          {post.content.blocks.map((block, index) => (
-            <div key={index}>{renderBlock(block)}</div>
-          ))}
+      <PostHeader
+        title={post.title}
+        subtitle={post.description || ''}
+        author={post.author}
+        publishedDate={new Date(post.createdAt).toLocaleDateString()}
+        readTime={post.readTime}
+        views={post.views}
+        coverImage={post.image || ''}
+        tags={post.tags}
+      />
+
+      <div className="max-w-7xl mx-auto px-4 py-8 grid lg:grid-cols-4 gap-8">
+        <div className="lg:col-span-3">
+          
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-sm border border-gray-200 dark:border-gray-700 mb-8"
+          >
+            <PostContent blocks={post.content.blocks} />
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 mb-8"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <motion.button
+                  onClick={handleLike}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-200 ${
+                    post.isLiked ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' :
+                    'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400'
+                  }`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Heart className={`w-5 h-5 ${post.isLiked ? 'fill-current' : ''}`} />
+                  <span>{post.likes}</span>
+                </motion.button>
+
+                <motion.button
+                  onClick={handleBookmark}
+                  className={`p-2 rounded-full transition-all duration-200 ${
+                    post.isBookmarked ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400' :
+                    'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400'
+                  }`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Bookmark className={`w-5 h-5 ${post.isBookmarked ? 'fill-current' : ''}`} />
+                </motion.button>
+
+                <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-400">
+                  <Eye className="w-5 h-5" />
+                  <span>{post.views.toLocaleString()} views</span>
+                </div>
+              </div>
+              
+            </div>
+          </motion.div>
+
+          <AuthorCard author={post.author} />
+         
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          {post.tags.map((tag, idx) => (
-            <span
-              key={idx}
-              className="text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded-full"
-            >
-              #{tag}
-            </span>
-          ))}
+        <div className="lg:col-span-1">
+          <div className="sticky top-32 space-y-6">
+        
+          </div>
         </div>
-      </article>
+      </div>
     </div>
   );
 };
 
-export default BlogPost;
+export default PostPage;
