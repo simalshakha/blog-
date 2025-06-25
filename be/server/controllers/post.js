@@ -139,7 +139,8 @@ exports.getPostById = async (req, res) => {
   try {
     const slug = req.params.id;
 
-    const data = await Post.findById(slug)
+    
+    const data = await Post.findById(slug).populate('user', 'fullName');
     if (!data) return res.status(404).send("Post not found");
     console.log("Post data:", data);
     // const topics = await Topic.find({ post: slug });
